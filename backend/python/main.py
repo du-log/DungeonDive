@@ -1,7 +1,8 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 import sqlite3
 import os
+import random
 
 app = FastAPI()
 
@@ -52,4 +53,49 @@ def get_stats():
 
     return roster
 
+@app.post("/adventurer/recruit")
+def recruit():
+    con = get_db_con()
+    RECRUIT_COST = 1000
 
+    try:
+        user = con.execute('select gold from users where id = 1').fetchone()
+        if user['gold'] < RECRUIT_COST:
+            raise HTTPException(status_code=400, detail='Not enough gold!')
+        
+        con.execute('update users set gold = gold - ? where id = 1', (RECRUIT_COST,))
+
+        names = ['John', 'Sarah', 'Mary', 'Henry', 'Sam', 'Jane']
+        new_name = random.choice(names)
+
+        classes = ['Warrior', 'Mage', 'Cleric', 'Paladin']
+        new_class = random.choice(classes)
+
+        con.execute(
+            'insert into adventurers (user_id, name, class) values (?, ?, ?)', 
+            (1, new_name, new_class)
+        )
+
+        con.commit()
+        return {"message": f"Recruited {new_class}, {new_name}!", "cost": RECRUIT_COST}
+    except Exception as e:
+        con.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+@app.post("/user/add-gold")
+def add_gold():
+    con = get_db_con()
+    gold_amount = 100
+
+    try:
+        user = con.execute('select gold from users where id = 1').fetchone()
+        con.execute('update users set gold = gold + ? where id = 1', (gold_amount,))
+        con.commit()
+        return{"message": f"Gained {gold_amount} gold!"}
+    except Exception as e:
+        con.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
