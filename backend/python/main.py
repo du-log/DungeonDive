@@ -26,6 +26,28 @@ def get_db_con():
 def read_root():
     return{"status": "Server Online"}
 
+@app.get("/user/info")
+def get_info():
+    con = get_db_con()
+    cur = con.cursor()
+
+    try:
+        user_row = cur.execute('SELECT * FROM users WHERE id = 1').fetchone()
+        if not user_row:
+            con.close()
+            raise HTTPException(status_code=404, detail="User not found")
+
+        user_info = {
+            "username": user_row['username'],
+            "gold": user_row['gold'],
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+    
+    return user_info
+        
 @app.get("/player/roster")
 def get_stats():
     con = get_db_con()
@@ -42,8 +64,6 @@ def get_stats():
         ).fetchall()
 
         roster = {
-            "username": user_row['username'],
-            "total_gold": user_row['gold'],
             "adventurers": [dict(row) for row in adventurer_rows]
         }
     except sqlite3.OperationError as e:
@@ -56,7 +76,7 @@ def get_stats():
 @app.post("/adventurer/recruit")
 def recruit():
     con = get_db_con()
-    RECRUIT_COST = 1000
+    RECRUIT_COST = 100
 
     try:
         user = con.execute('select gold from users where id = 1').fetchone()
@@ -96,6 +116,46 @@ def add_gold():
         return{"message": f"Gained {gold_amount} gold!"}
     except Exception as e:
         con.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+@app.delete("/adventurer/retire/{adv_id}")
+def retire_adventurer(adv_id: int):
+    con = get_db_con()
+    print(f"DEBUG: Attempting to retire adventurer ID: {adv_id}")
+
+    try:
+        adv = con.execute(
+            'SELECT * FROM adventurers WHERE id = ? AND user_id = 1',
+            (adv_id,)
+        ).fetchone()
+
+        if not adv:
+            print("DEBUG: Adventurer not found in DB")
+            raise HTTPException(status_code=404, detail="Adventurer not found")
+        
+        print(str(adv_id))
+
+        adv_name = adv['name']
+        adv_level = adv['level']
+        REFUND_AMOUNT = adv_level * 100
+
+        print(str(REFUND_AMOUNT))
+
+        con.execute('DELETE FROM adventurers WHERE id = ?', (adv_id,))
+        print("Deleted adventurer.")
+        con.execute('UPDATE users SET gold = gold + ? WHERE id = 1', (REFUND_AMOUNT,))
+        print("Refunded gold.")
+
+        con.commit()
+        return {
+            "message": f"Retired {adv_name}. Received {REFUND_AMOUNT} gold.",
+            "refund": REFUND_AMOUNT,
+        }
+    except Exception as e:
+        con.rollback()
+        print(f"SQLERROR: {str(e)}")
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         con.close()
