@@ -15,6 +15,7 @@ dist-ssr
 backend/python/venv/
 backend/python/__pycache__/
 backend/python/*.db
+backend/python/routes/__pycache__/
 
 # Editor directories and files
 .vscode/*

@@ -1,3 +1,5 @@
+import TavernMenu from "./TavernMenu"
+
 function Tavern({ refreshData }) {
 
     const recruit = async() => {
@@ -13,8 +15,8 @@ function Tavern({ refreshData }) {
     }
 
     return(
-        <div>
-            <button onClick={recruit} className="btn btn-primary">Recruit (100G)</button>
+        <div className="p-10">
+            <TavernMenu recruit={recruit} />
         </div>
     )
 }
