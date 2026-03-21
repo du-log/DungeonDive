@@ -9,16 +9,22 @@ function App() {
   const [infoData, setInfo] = useState<any>(null)
   const [rosterData, setRoster] = useState<any>(null)
 
-  const [partyData, setParty] = useState<number[]>([])
+  const partyData = rosterData ? rosterData.adventurers.filter((adv) => adv.in_party).map((adv) => adv.id) : []
 
-  const togglePartyMember = (id: number) => {
-    setParty(prev => {
-      if (prev.includes(id)) {
-        return prev.filter(memberId => memberId !== id) // if id matches, remove
-      } else {
-        return prev.length < 4 ? [...prev, id] : prev // if room in party, add
-      }
-    })
+
+  const togglePartyMember = async (id: number) => {
+    try {
+      const res = await fetch(`http://127.0.0.1:8000/adventurer/toggle/party/${id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+      await res.json()
+      await fetchAllData()
+    } catch (error) {
+      console.error('Error toggling party member:', error)
+    }
   }
 
   const fetchAllData = async() => {

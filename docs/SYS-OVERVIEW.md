@@ -34,8 +34,9 @@ This document outlines the architecture of Dungeon Dive.
 1. Takes in fetchAllData for data updating, rosterData to get roster, partyData hold list of ad_id in party, togglePartyMember to add/remove adventurers (associated IDs, rather) to party_ids list.
 2. Contains a activeTab state for which part of "Town" we are in. Starts at 'map', can be set to 'guild' or 'tavern'.
  - 'map' provides buttons to navigate to 'guild' tab or 'tavern' tab
- - 'guild' tab enables a nested Guild view that contains a button to enable 'roster' state that displays a grid list of AdventurerCard objects. Each card shows information of an adventurer and has buttons to manage (not enabled), retire, or add/remove from party.
+ - 'guild' tab enables a nested Guild view that contains a button to enable 'roster' state that displays a grid list of AdventurerCard objects. Each card shows information of an adventurer and has buttons to view adventurer's information, retire, or add/remove from party. Updated to include a scrollable grid when we have many adventurers.
  - 'tavern' tab enables a nested Tavern view that contains a button to 'recruit' adventurers for 100 Gold.
+ - 'infirmary' tab enables a nested Infirmary view that displays adventurers not at full hp and a button that allows the player to heal all x adventurers for 100 * x Gold.
 
 ## Flow for Dungeon Diving State
 1. Options for allocating skill points and stat points, changing equipment, beginning battle states
@@ -44,6 +45,10 @@ This document outlines the architecture of Dungeon Dive.
 4. Battle states: 10 Stages per Dungeon Level, Stages 1-4 are auto-battle, Stage 5 is a Rest giving the usual options, Stage 6-9 are auto-battle, Stage 10 is boss, possibly auto-battle or dictated on stats.
 
 ### Current Flow
-1. Button that allows dungeon ticks to start running based on an interval of 3 seconds.
+~~1. Button that allows dungeon ticks to start running based on an interval of 3 seconds.~~
 2. Each interval sends a POST request to /dungeon/tick with a list of party IDs, and each tick determines an event.
-3. Button can be clicked to pause/end the requests.
+~~3. Button can be clicked to pause/end the requests.~~
+4. Current dungeon state automatically starts the ticks, 3-second intervals.
+5. Selected party members are displayed at the bottom of the screen in a party box, HP is updated and reflected in each adventurer's card whenever a tick is called.
+6. Button changed from start/pause to retreat, if pressed then do a timeout instead of interval to end the dungeon "run".
+7. Whether manually ended or ended due to all party members being defeated, a modal will pop up displaying the amount of gold earned during that run. A button allows to return to the town state.

@@ -30,6 +30,7 @@ def init_db():
             int INTEGER DEFAULT 10,
             will INTEGER DEFAULT 10,
             luck INTEGER DEFAULT 10,
+            in_party BOOLEAN DEFAULT FALSE,
             FOREIGN KEY (user_id) REFERENCES users (id)
         )
     ''')
@@ -39,8 +40,8 @@ def init_db():
     if cur.fetchone()[0] == 0:
         cur.execute('INSERT INTO users (username, gold) VALUES (?, ?)', ("Player", 500))
         user_id = cur.lastrowid
-        cur.execute('INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)', (user_id, "John", "Warrior"))
-        cur.execute('INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)', (user_id, "Mary", "Mage"))
+        #cur.execute('INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)', (user_id, "John", "Warrior"))
+        #cur.execute('INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)', (user_id, "Mary", "Mage"))
     
     con.commit()
     con.close()

@@ -45,11 +45,11 @@ def recruit():
     RECRUIT_COST = 100
 
     try:
-        user = con.execute('select gold from users where id = 1').fetchone()
+        user = con.execute('SELECT gold FROM users WHERE id = 1').fetchone()
         if user['gold'] < RECRUIT_COST:
             raise HTTPException(status_code=400, detail='Not enough gold!')
         
-        con.execute('update users set gold = gold - ? where id = 1', (RECRUIT_COST,))
+        con.execute('UPDATE users SET gold = gold - ? WHERE id = 1', (RECRUIT_COST,))
 
         names = ['John', 'Sarah', 'Mary', 'Henry', 'Sam', 'Jane']
         new_name = random.choice(names)
@@ -58,8 +58,8 @@ def recruit():
         new_class = random.choice(classes)
 
         con.execute(
-            'insert into adventurers (user_id, name, class) values (?, ?, ?)', 
-            (1, new_name, new_class)
+            'INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)',
+            (1, new_name, new_class,)
         )
 
         con.commit()
@@ -129,7 +129,11 @@ def heal_adventurers(data: HealRequest):
                 new_hp = max_hp
                 con.execute('UPDATE adventurers SET current_hp = ? WHERE id = ?', (new_hp, adv_id,))
 
-        con.execute('UPDATE users SET gold = gold - ? WHERE id = 1', (total_healing_cost,))
+        user = con.execute('SELECT gold FROM users WHERE id = 1').fetchone()
+        if user['gold'] < total_healing_cost:
+            raise HTTPException(status_code=400, detail='Not enough gold to heal!')
+        else:
+            con.execute('UPDATE users SET gold = gold - ? WHERE id = 1', (total_healing_cost,))
 
         con.commit()
         return {"message": f"Healed {len(data.healing_ids)} adventurers back to full health!"}
@@ -138,3 +142,31 @@ def heal_adventurers(data: HealRequest):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         con.close()
+
+@router.post("/toggle/party/{adv_id}")
+def toggle_party_member(adv_id: int):
+    con = get_db_con()
+    try:
+        adv = con.execute('SELECT in_party FROM adventurers WHERE id = ? AND user_id = 1', (adv_id,)).fetchone()
+        if not adv:
+            raise HTTPException(status_code=404, detail="Adventurer not found")
+        
+        if adv['in_party']:
+            con.execute('UPDATE adventurers SET in_party = FALSE WHERE id = ?', (adv_id,))
+            message = "Adventurer removed from party."
+        else:
+            party_count = con.execute('SELECT COUNT(*) FROM adventurers WHERE user_id = 1 AND in_party = TRUE').fetchone()[0]
+            if party_count >= 4:
+                raise HTTPException(status_code=400, detail="Party is full! Max 4 adventurers allowed.")
+            con.execute('UPDATE adventurers SET in_party = TRUE WHERE id = ?', (adv_id,))
+            message = "Adventurer added to party."
+
+        con.commit()
+        return {"message": message}
+    except Exception as e:
+        con.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+#

@@ -27,8 +27,8 @@ function Infirmary({ rosterData, refreshData }) {
             <div className="flex flex-col gap-10 justify-center border rounded-4xl p-10">
                 <h1 className="text-4xl">Infirmary</h1>
                 <div>{injuredAdventurers.length === 0 && <p className="text-4xl">All adventurers are at full health!</p>}</div>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-2 p-10 border rounded-4xl items-center justify-center"
-                visually-hidden={injuredAdventurers.length === 0}>
+                <div className={`grid grid-cols-1 md:grid-cols-3 gap-2 p-10 border rounded-4xl items-center justify-center
+                    ${injuredAdventurers.length === 0 ? 'hidden' : ''}`}>
                     {injuredAdventurers.map((char) => (
                     <div key={char.id} className="p-4 border rounded-lg">
                         <h2>{char.name}</h2>
