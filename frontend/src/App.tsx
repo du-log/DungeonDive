@@ -48,13 +48,12 @@ function App() {
     
     <div className="flex flex-col bg-base-200 min-h-dvh">
       <NavBar
-      view={view} 
-      setView={setView}
+      view={view}
       infoDataGold={infoData?.gold || 0}
       infoDataUsername={infoData?.username || 'Player'}
       partyData={partyData} 
       />
-      <main className='flex-grow flex flex-col items-center justify-center p-5'>
+      <main className='flex-grow flex flex-col items-center justify-center p-5 border'>
         <div className='w-full max-w-6xl'>
           {view === 'town' && 
         <TownView 
@@ -62,12 +61,15 @@ function App() {
         refreshData={fetchAllData}
         partyData={partyData}
         togglePartyMember={togglePartyMember} 
+        setView={setView}
         />}
 
         {view === 'dungeon' && 
         <DungeonView
         partyData={partyData}
-        refreshData={updateGold}
+        rosterData={rosterData}
+        refreshData={fetchAllData}
+        setView={setView}
         />}
         </div>
       </main>

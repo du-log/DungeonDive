@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException
+from pydantic import BaseModel
 import sqlite3
 import os
 import random
@@ -105,6 +106,35 @@ def retire_adventurer(adv_id: int):
     except Exception as e:
         con.rollback()
         print(f"SQLERROR: {str(e)}")
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+class HealRequest(BaseModel):
+    healing_ids: list[int]
+
+@router.post("/heal")
+def heal_adventurers(data: HealRequest):
+    con = get_db_con()
+    HEAL_COST = 100
+
+    total_healing_cost = len(data.healing_ids) * HEAL_COST
+
+    try:
+        for adv_id in data.healing_ids:
+            res = con.execute('SELECT name, current_hp, max_hp FROM adventurers WHERE id = ?', (adv_id,)).fetchone()
+            if res:
+                name, current_hp, max_hp = res['name'], res['current_hp'], res['max_hp']
+
+                new_hp = max_hp
+                con.execute('UPDATE adventurers SET current_hp = ? WHERE id = ?', (new_hp, adv_id,))
+
+        con.execute('UPDATE users SET gold = gold - ? WHERE id = 1', (total_healing_cost,))
+
+        con.commit()
+        return {"message": f"Healed {len(data.healing_ids)} adventurers back to full health!"}
+    except Exception as e:
+        con.rollback()
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         con.close()
