@@ -2,14 +2,15 @@ import Roster from "./Roster"
 import { useState } from "react"
 import { PersonStanding } from "lucide-react"
 
-function GuildHall({rosterData, refreshData, partyData, togglePartyMember}) {
+function GuildHall({rosterData, refreshData, partyData, togglePartyMember, setSubTab}) {
     const [activeGuildTab, setGuildTab] = useState('main')
 
     return (
         <div className="flex-col">
             {activeGuildTab === 'main' && (
                 <div className="p-10">
-                    <button className="btn btn-primary w-35 h-20 text-xl" onClick={() => setGuildTab('roster')}>
+                    <button className="btn btn-primary w-35 h-20 text-xl"
+                    onClick={() => {setGuildTab('roster'); setSubTab(true)}}>
                         <PersonStanding size={40} />
                         Roster
                     </button>
@@ -28,8 +29,9 @@ function GuildHall({rosterData, refreshData, partyData, togglePartyMember}) {
                 </div>
             )}
             {activeGuildTab !== 'main' && (
-                <div className="p-10">
-                    <button className="btn btn-secondary" onClick={() => setGuildTab('main')}>Guild Hall Menu</button>
+                <div>
+                    <button className="btn btn-secondary text-lg p-10"
+                    onClick={() => {setGuildTab('main'); setSubTab(false)}}>Guild Hall Menu</button>
                 </div>
             )}
         </div>
