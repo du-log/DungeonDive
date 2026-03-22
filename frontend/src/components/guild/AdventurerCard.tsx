@@ -1,4 +1,4 @@
-import { UserMinus, BadgeInfo, PlusIcon, MinusIcon, Pentagon, Circle, Triangle, Square } from "lucide-react"
+import { UserMinus, BadgeInfo, PlusIcon, MinusIcon, Pentagon, Circle, Triangle, Square, Star } from "lucide-react"
 import { useState } from "react"
 
 function AdventurerCard({ data, refreshData, partyData, togglePartyMember }) {
@@ -54,8 +54,8 @@ function AdventurerCard({ data, refreshData, partyData, togglePartyMember }) {
             </div>
             {modalOpen && (
                 <dialog id="adv_modal" className="modal modal-open">
-                    <div className="modal-box w-60 border-2">
-                        <div className="flex flex-col gap-5 justify-center">
+                    <div className="modal-box w-65 border-2">
+                        <div className="flex flex-col gap-2 justify-center">
                             <h3 className="font-bold text-lg">{data.name}</h3>
                             <p>Class: {data.class}</p>
                             <div className="flex flex-col items-center">
@@ -64,12 +64,26 @@ function AdventurerCard({ data, refreshData, partyData, togglePartyMember }) {
                                 {data.class === "Mage" && <Circle size={40} className="text-green-500" />}
                                 {data.class === "Cleric" && <Pentagon size={40} className="text-yellow-500" />}
                             </div>
+                            <div className="flex flex-row justify-center items-center">
+                                {data.tier === 1 && <Star size={15} className="text-yellow-500" />}
+                                {data.tier === 2 && (<>
+                                    <Star size={15} className="text-yellow-500" />
+                                    <Star size={15} className="text-yellow-500" />
+                                </>)}
+                                {data.tier === 3 && (<>
+                                    <Star size={15} className="text-yellow-500" />
+                                    <Star size={15} className="text-yellow-500" />
+                                    <Star size={15} className="text-yellow-500" />
+                                </>)}
+                            </div>
                             <p>Level: {data.level}</p>
+                            <p>XP: {data.experience}</p>
                             <p>HP: {data.current_hp}/{data.max_hp}</p>
                             <div className="flex flex-row gap-5 justify-center items-center border rounded-xl p-5">
                                 <div className="flex-start">
                                     <p>Str: {data.str}</p>
-                                    <p>Con: {data.con}</p>
+                                    <p>Dex: {data.dex}</p>
+                                    <p>Speed: {data.speed}</p>
                                 </div>
                                 <div className="flex-end">
                                     <p>Int: {data.int}</p>

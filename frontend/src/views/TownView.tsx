@@ -30,6 +30,12 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                         <Swords size={40} />
                         Enter Dungeon
                     </button>
+                    <button onClick={() => setView('battle')}
+                    className={`btn btn-xl w-fit h-fit text-xl p-2 ${partyData.length === 0 ? 'btn-disabled' : 'btn-secondary'}`}>
+                        <Swords size={40} />
+                        Enter Battle (Preview)
+                    </button>
+
                 </div>
             )}
             {activeTab === 'guild' && (

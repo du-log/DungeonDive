@@ -3,6 +3,7 @@ import './App.css'
 import NavBar from './components/layout/NavBar'
 import TownView from './views/TownView'
 import DungeonView from './views/DungeonView'
+import BattleView from './views/BattleView'
 
 function App() {
   const [view, setView] = useState('town')
@@ -75,6 +76,11 @@ function App() {
         partyData={partyData}
         rosterData={rosterData}
         refreshData={fetchAllData}
+        setView={setView}
+        />}
+
+        {view === 'battle' && 
+        <BattleView
         setView={setView}
         />}
         </div>
