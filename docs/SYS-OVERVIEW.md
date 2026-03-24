@@ -45,9 +45,9 @@ This document outlines the architecture of Dungeon Dive.
 4. Battle states: 10 Stages per Dungeon Level, Stages 1-4 are auto-battle, Stage 5 is a Rest giving the usual options, Stage 6-9 are auto-battle, Stage 10 is boss, possibly auto-battle or dictated on stats.
 
 ### Current Flow
-~~1. Button that allows dungeon ticks to start running based on an interval of 3 seconds.~~
-2. Each interval sends a POST request to /dungeon/tick with a list of party IDs, and each tick determines an event.
-~~3. Button can be clicked to pause/end the requests.~~
+~~1. Button that allows dungeon ticks to start running based on an interval of 3 seconds.~~  
+2. Each interval sends a POST request to /dungeon/tick with a list of party IDs, and each tick determines an event.  
+~~3. Button can be clicked to pause/end the requests.~~  
 4. Current dungeon state automatically starts the ticks, 3-second intervals.
 5. Selected party members are displayed at the bottom of the screen in a party box, HP is updated and reflected in each adventurer's card whenever a tick is called.
 6. Button changed from start/pause to retreat, if pressed then do a timeout instead of interval to end the dungeon "run".
