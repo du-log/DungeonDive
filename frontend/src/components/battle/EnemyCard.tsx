@@ -1,11 +1,11 @@
 function EnemyCard( /*{enemy, isTargeted, onSelect} */ ) {
     //const hpPercent = (enemy.current_hp / enemy.max_hp) * 100;
     return (
-        <div>
+        <div className="relative md:scale-70 h-full w-full">
             <div /*onClick={ () => onSelect(enemy.id) }*/
-                className={`card bg-base-100 shadow-xl cursor-pointer`}>
+                className={`card bg-base-100 shadow-xl w-75 h-full cursor-pointer ${/*isTargeted ? 'ring-4 ring-red-500' : ''*/''}`}>
                 <div className="card-body">
-                    <h2 className="card-title">{/*enemy.name*/}Goblin</h2>
+                    <h2 className="card-title justify-center">{/*enemy.name*/}Goblin</h2>
                     <p>Level: {/*enemy.level*/}</p>
 
                     <progress className="progress progress-error w-full"

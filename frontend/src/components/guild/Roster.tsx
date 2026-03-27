@@ -3,7 +3,7 @@ import AdventurerCard from "./AdventurerCard"
 function Roster({ adventurersData, refreshData, partyData, togglePartyMember }) {
     if (!adventurersData || adventurersData.length === 0) {
         return (
-            <div className="flex flex-col">
+            <div className="relative w-full h-full flex flex-col">
                 <h1 className="text-4xl font-bold">
                     Your roster is empty!
                 </h1>
@@ -15,8 +15,8 @@ function Roster({ adventurersData, refreshData, partyData, togglePartyMember }) 
     }
 
     return(
-        <div className="relative w-full h-[70vh] border overflow-y-auto scrollbar-thin">
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 p-10 justify-items-center">
+        <div className="relative w-full h-full border overflow-y-auto scrollbar-thin">
+            <div className="grid grid-cols-1 md:grid-cols-4 md:scale-80 relative h-full w-full justify-items-center p-5">
                 {adventurersData?.map((char) => (
                     <AdventurerCard 
                     key={char.id}

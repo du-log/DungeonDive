@@ -10,9 +10,9 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
     const [activeSubTab, setSubTab] = useState<boolean | null>(false)
 
     return (
-        <div className='p-10 relative w-full h-full flex flex-col items-center justify-center gap-10'>
+        <div className='relative h-full w-full flex flex-col items-center justify-center'>
             {activeTab === 'map' && (
-                <div className='relative flex flex-col items-center gap-20 p-10 m-10 w-150 border-4 rounded-4xl'>
+                <div className='relative h-full flex flex-col items-center justify-center gap-20 md:gap-10 p-10 m-10 w-full border-4 rounded-4xl'>
                     <button onClick={() => setTab('guild')} className='btn btn-xl btn-primary w-fit h-fit text-xl p-2'>
                         <Castle size={40} />
                         Guild Hall
@@ -39,7 +39,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                 </div>
             )}
             {activeTab === 'guild' && (
-                <div>
+                <div className='relative h-full flex flex-col items-center justify-center p-10 m-10 w-full border-4 rounded-4xl'>
 
                     { rosterData ? 
                     <GuildHall
@@ -50,20 +50,26 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                     setSubTab={setSubTab}
                     /> : <p>Loading...</p> }
 
+                    { !activeSubTab && (
+                    <button onClick={() => setTab('map')} className='btn btn-md btn-secondary'>Back to Town</button>
+                    ) }
                 </div>
             )}
             {activeTab === 'tavern' && (
-                <div>
+                <div className='relative h-full flex flex-col items-center justify-center md:gap-10 p-10 m-10 w-full border-4 rounded-4xl'>
 
                     {rosterData ? 
                     <Tavern 
                     refreshData={refreshData} 
                     /> : <p>Loading...</p>}
 
+                    { !activeSubTab && (
+                    <button onClick={() => setTab('map')} className='btn btn-md btn-secondary'>Back to Town</button>
+                    ) }
                 </div>
             )}
             {activeTab === 'infirmary' && (
-                <div>
+                <div className='relative h-full flex flex-col items-center justify-center gap-1 p-10 w-full border-4 rounded-4xl'>
 
                     {rosterData ? 
                     <Infirmary 
@@ -71,10 +77,10 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                     refreshData={refreshData} 
                     /> : <p>Loading...</p>}
 
+                    { !activeSubTab && (
+                    <button onClick={() => setTab('map')} className='btn btn-md btn-secondary'>Back to Town</button>
+                    ) }
                 </div>
-            )}
-            {activeTab !== 'map' && !activeSubTab && (
-                <button onClick={() => setTab('map')} className='btn btn-lg btn-secondary'>Back to Town</button>
             )}
         </div>
     )

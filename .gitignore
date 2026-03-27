@@ -16,6 +16,7 @@ backend/python/venv/
 backend/python/__pycache__/
 backend/python/*.db
 backend/python/routes/__pycache__/
+backend/python/requirements.txt
 
 # Editor directories and files
 .vscode/*

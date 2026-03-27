@@ -78,23 +78,26 @@ function DungeonView({partyData, rosterData, refreshData, setView}) {
 
     return (
         <div>
-            <div className={`relative max-h-2xl flex flex-col gap-10 p-10 items-center 
+            <div className={`flex flex-col relative h-full w-full p-[1vw] items-center justify-center 
                 ${!isRunning && logs.length > 1 ? 'blur-sm grayscale' : ''}`}>
-                <h2 className="justify-self-center text-3xl p-5 w-fit rounded-xl font-bold border">
+                <h2 className="flex-start text-3xl p-5 h-fit w-fit rounded-xl font-bold border md:scale-90">
                     Dungeon Exploration
                 </h2>
-                <div ref={scrollRef}
-                className="justify-self-center h-40 w-150 overflow-y-auto border rounded-xl bg-black p-1 mb-5">
-                    {logs.map((log, i) => (
-                        <div key={i} className="font-bold">{`> ${log}`}</div>
-                    ))}
+                <div className="flex flex-col relative h-full w-full items-center justify-center">
+                    <div ref={scrollRef}
+                    className="relative h-[30vh] w-[70vw] overflow-y-auto border rounded-xl bg-black p-1 mb-5">
+                        {logs.map((log, i) => (
+                            <div key={i} className="font-bold">{`> ${log}`}</div>
+                        ))}
+                    </div>
+                    <button onClick={ () => {setIsRetreating(true); setLogs(prev => [...prev, "Retreating from dungeon..."])} }
+                    disabled={isRetreating || !isRunning}
+                    className={`btn w-fit ${isRetreating ? 'btn-warning loading' : 'btn-error'}`}>
+                        {isRetreating ? 'Retreating...' : 'Retreat'}
+                    </button>
                 </div>
-                <button onClick={ () => {setIsRetreating(true); setLogs(prev => [...prev, "Retreating from dungeon..."])} }
-                disabled={isRetreating || !isRunning}
-                className={`btn w-fit ${isRetreating ? 'btn-warning loading' : 'btn-error'}`}>
-                    {isRetreating ? 'Retreating...' : 'Retreat'}
-                </button>
-                <div>
+
+                <div className="flex-end relative h-fit w-fit">
                     <PartyMemberBar partyMembers={activeParty} />
                 </div>
             </div>

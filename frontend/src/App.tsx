@@ -53,15 +53,16 @@ function App() {
 
   return (
     
-    <div className="flex flex-col bg-base-200 min-h-dvh">
-      <NavBar
-      view={view}
-      infoDataGold={infoData?.gold || 0}
-      infoDataUsername={infoData?.username || 'Player'}
-      partyData={partyData} 
-      />
-      <main className='flex-grow flex flex-col items-center justify-center p-5 border'>
-        <div className='w-full max-w-6xl'>
+    <div className="flex flex-col bg-base-200 h-screen w-full overflow-hidden">
+      <header className='flex-start relative h-fit'>
+        <NavBar
+        view={view}
+        infoDataGold={infoData?.gold || 0}
+        infoDataUsername={infoData?.username || 'Player'}
+        partyData={partyData} 
+        />
+      </header>
+      <main className='flex-grow relative overflow-hidden h-full'>
           {view === 'town' && 
         <TownView 
         rosterData={rosterData}
@@ -83,8 +84,11 @@ function App() {
         <BattleView
         setView={setView}
         />}
-        </div>
       </main>
+      <footer className='flex-end relative h-fit border-t'>
+        <p className='text-xs'>Dungeon Dive &copy; 2026</p>
+        <p className='text-xs'>Made with ❤️ by Brandon Dulog</p>
+      </footer>
     </div>
   )
 }

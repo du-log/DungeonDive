@@ -6,10 +6,10 @@ function GuildHall({rosterData, refreshData, partyData, togglePartyMember, setSu
     const [activeGuildTab, setGuildTab] = useState('main')
 
     return (
-        <div className="flex-col">
+        <div className="flex-col relative h-full w-full items-center justify-center">
             {activeGuildTab === 'main' && (
-                <div className="p-10">
-                    <button className="btn btn-primary w-35 h-20 text-xl"
+                <div className="p-[1vw]">
+                    <button className="btn btn-primary p-10 text-xl"
                     onClick={() => {setGuildTab('roster'); setSubTab(true)}}>
                         <PersonStanding size={40} />
                         Roster
@@ -17,7 +17,7 @@ function GuildHall({rosterData, refreshData, partyData, togglePartyMember, setSu
                 </div>
             )}
             {activeGuildTab === 'roster' && (
-                <div className="p-10">
+                <div className="relative h-full w-full flex flex-col p-2 gap-5">
 
                     <Roster 
                     adventurersData={rosterData.adventurers} 
@@ -25,13 +25,12 @@ function GuildHall({rosterData, refreshData, partyData, togglePartyMember, setSu
                     partyData={partyData}
                     togglePartyMember={togglePartyMember}
                     />
-                    
-                </div>
-            )}
-            {activeGuildTab !== 'main' && (
-                <div>
-                    <button className="btn btn-secondary text-lg p-10"
+
+                    <div>
+                    <button className="btn btn-lg btn-secondary"
                     onClick={() => {setGuildTab('main'); setSubTab(false)}}>Guild Hall Menu</button>
+                </div>
+                    
                 </div>
             )}
         </div>

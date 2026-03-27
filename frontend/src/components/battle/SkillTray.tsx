@@ -1,6 +1,6 @@
 function SkillTray( {activeAdventurer, onUseSkill, onAttack} ) {
     return (
-        <div className="flex flex-col items-center gap-4 bg-base-300 p-4 rounded-t-2xl border-t border-primary/30">
+        <div className="flex flex-col relative h-full w-full items-center gap-4 bg-base-300 p-4 rounded-t-2xl border-t border-primary/30">
             <div className="flex gap-2">
                 {[1, 2, 3].map(slot => (
                 <button key={slot} className="btn btn-square btn-outline btn-secondary"

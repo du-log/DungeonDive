@@ -11,17 +11,19 @@ function BattleView( {setView} ) {
     }
 
     return (
-        <div>
-            <div className='flex flex-col relative h-full w-full'>
-                <div className='flex-1 p-4'>
+        <div className='relative h-full w-full'>
+            <div className='flex flex-col justify-center'>
+                <div className='flex flex-start items-center relative w-full p-4'>
                     <EnemyGrip enemies={{}} targetedEnemyId={targetId} onSelectEnemy={handleTargetSelect} />
                 </div>
-                <div className='h-48 p-4'>
+                <div className='flex-grow p-4'>
                     <ActionLog />
                 </div>
-                <CombatHUD activeAdventurer={{}} onUseSkill={() => {}} onAttack={() => {}} />
+                <div className='flex-end p-4'>
+                    <CombatHUD activeAdventurer={{}} onUseSkill={() => {}} onAttack={() => {}} />
+                </div>
             </div>
-            <button onClick={() => setView('town')} className="btn btn-secondary m-4">Flee to Town</button>
+            <button onClick={() => setView('town')} className="btn btn-secondary btn-sm">Flee to Town</button>
         </div>
     );
 }

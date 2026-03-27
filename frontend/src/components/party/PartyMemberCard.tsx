@@ -4,7 +4,7 @@ function PartyMemberCard({ adventurer }) {
   const hp_percentage = (adventurer.current_hp / adventurer.max_hp) * 100
 
   return (
-    <div className="body w-30 h-50 justify-center border rounded-xl p-3">
+    <div className="body relative w-30 h-full justify-center border rounded-xl p-3">
       <div className="mb-1 border rounded-xl relative w-full h-full flex flex-col p-1 justify-center gap-2">
         <div className="flex flex-col items-center">
           {adventurer.class === "Warrior" && <Square size={40} className="text-red-500" />}

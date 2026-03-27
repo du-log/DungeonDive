@@ -54,7 +54,7 @@ function AdventurerCard({ data, refreshData, partyData, togglePartyMember }) {
             </div>
             {modalOpen && (
                 <dialog id="adv_modal" className="modal modal-open">
-                    <div className="modal-box w-65 border-2">
+                    <div className="modal-box border-2">
                         <div className="flex flex-col gap-2 justify-center">
                             <h3 className="font-bold text-lg">{data.name}</h3>
                             <p>Class: {data.class}</p>
