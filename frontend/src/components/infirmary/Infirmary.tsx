@@ -23,7 +23,7 @@ function Infirmary({ rosterData, refreshData }) {
 
 
     return (
-        <div className="relative h-full w-fit">
+        <div className="relative h-fit w-fit">
             <div className="flex flex-col relative h-full w-full gap-5 items-center justify-center p-10">
                 <h1 className="text-4xl">Infirmary</h1>
                 <div>{injuredAdventurers.length === 0 && <p className="text-4xl">All adventurers are at full health!</p>}</div>

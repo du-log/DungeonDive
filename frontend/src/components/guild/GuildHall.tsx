@@ -6,7 +6,7 @@ function GuildHall({rosterData, refreshData, partyData, togglePartyMember, setSu
     const [activeGuildTab, setGuildTab] = useState('main')
 
     return (
-        <div className="flex-col relative h-full w-full items-center justify-center">
+        <div className="flex-col relative h-fit w-full items-center justify-center">
             {activeGuildTab === 'main' && (
                 <div className="p-[1vw]">
                     <button className="btn btn-primary p-10 text-xl"

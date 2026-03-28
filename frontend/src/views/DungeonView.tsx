@@ -77,7 +77,7 @@ function DungeonView({partyData, rosterData, refreshData, setView}) {
     }, [logs])
 
     return (
-        <div>
+        <div className="relative h-full w-full flex flex-col">
             <div className={`flex flex-col relative h-full w-full p-[1vw] items-center justify-center 
                 ${!isRunning && logs.length > 1 ? 'blur-sm grayscale' : ''}`}>
                 <h2 className="flex-start text-3xl p-5 h-fit w-fit rounded-xl font-bold border md:scale-90">

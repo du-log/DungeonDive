@@ -11,8 +11,8 @@ function BattleView( {setView} ) {
     }
 
     return (
-        <div className='relative h-full w-full'>
-            <div className='flex flex-col justify-center'>
+        <div className='relative flex flex-col h-full w-full items-center pt-2 pb-2'>
+            <div className='flex flex-col relative h-full w-full'>
                 <div className='flex flex-start items-center relative w-full p-4'>
                     <EnemyGrip enemies={{}} targetedEnemyId={targetId} onSelectEnemy={handleTargetSelect} />
                 </div>
@@ -23,7 +23,7 @@ function BattleView( {setView} ) {
                     <CombatHUD activeAdventurer={{}} onUseSkill={() => {}} onAttack={() => {}} />
                 </div>
             </div>
-            <button onClick={() => setView('town')} className="btn btn-secondary btn-sm">Flee to Town</button>
+            <button onClick={() => setView('town')} className="btn btn-secondary btn-sm w-fit">Flee to Town</button>
         </div>
     );
 }

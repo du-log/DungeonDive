@@ -28,7 +28,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                     <button onClick={() => setView('dungeon')}
                     className={`btn btn-xl w-fit h-fit text-xl p-2 ${partyData.length === 0 ? 'btn-disabled' : 'btn-error'}`}>
                         <Swords size={40} />
-                        Enter Dungeon
+                        Enter Dungeon ({partyData.length}/4)
                     </button>
                     <button onClick={() => setView('battle')}
                     className={`btn btn-xl w-fit h-fit text-xl p-2 ${partyData.length === 0 ? 'btn-disabled' : 'btn-secondary'}`}>
@@ -39,7 +39,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                 </div>
             )}
             {activeTab === 'guild' && (
-                <div className='relative h-full flex flex-col items-center justify-center p-10 m-10 w-full border-4 rounded-4xl'>
+                <div className='relative h-full flex flex-col items-center justify-center md:gap-10 p-10 m-10 w-full border-4 rounded-4xl'>
 
                     { rosterData ? 
                     <GuildHall
@@ -51,7 +51,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                     /> : <p>Loading...</p> }
 
                     { !activeSubTab && (
-                    <button onClick={() => setTab('map')} className='btn btn-md btn-secondary'>Back to Town</button>
+                    <button onClick={() => setTab('map')} className='btn btn-lg btn-secondary'>Back to Town</button>
                     ) }
                 </div>
             )}
@@ -64,12 +64,12 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                     /> : <p>Loading...</p>}
 
                     { !activeSubTab && (
-                    <button onClick={() => setTab('map')} className='btn btn-md btn-secondary'>Back to Town</button>
+                    <button onClick={() => setTab('map')} className='btn btn-lg btn-secondary'>Back to Town</button>
                     ) }
                 </div>
             )}
             {activeTab === 'infirmary' && (
-                <div className='relative h-full flex flex-col items-center justify-center gap-1 p-10 w-full border-4 rounded-4xl'>
+                <div className='relative h-full flex flex-col items-center justify-center gap-1 p-10 m-10 w-full border-4 rounded-4xl'>
 
                     {rosterData ? 
                     <Infirmary 
@@ -78,7 +78,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                     /> : <p>Loading...</p>}
 
                     { !activeSubTab && (
-                    <button onClick={() => setTab('map')} className='btn btn-md btn-secondary'>Back to Town</button>
+                    <button onClick={() => setTab('map')} className='btn btn-lg btn-secondary'>Back to Town</button>
                     ) }
                 </div>
             )}
