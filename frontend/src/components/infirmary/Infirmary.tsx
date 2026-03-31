@@ -23,11 +23,11 @@ function Infirmary({ rosterData, refreshData }) {
 
 
     return (
-        <div className="relative h-fit w-fit">
-            <div className="flex flex-col relative h-full w-full gap-5 items-center justify-center p-10">
+        <div className="relative h-full w-fit">
+            <div className="flex flex-col relative h-full w-full gap-5 items-center justify-center p-10 overflow-y-auto">
                 <h1 className="text-4xl">Infirmary</h1>
                 <div>{injuredAdventurers.length === 0 && <p className="text-4xl">All adventurers are at full health!</p>}</div>
-                <div className={`grid grid-cols-1 md:grid-cols-4 gap-2 p-5 relative h-full w-full border rounded-4xl items-center justify-center
+                <div className={`grid grid-cols-1 md:grid-cols-4 gap-2 p-5 relative h-[70vh] w-full border rounded-4xl items-center justify-center
                     ${injuredAdventurers.length === 0 ? 'hidden' : ''}`}>
                     {injuredAdventurers.map((char) => (
                     <div key={char.id} className="p-4 border rounded-lg">

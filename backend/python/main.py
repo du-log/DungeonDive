@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from routes import adventurers, users, dungeon
+from routes import adventurers, users, dungeon, battle
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI()
@@ -15,6 +15,7 @@ app.add_middleware(
 app.include_router(adventurers.router)
 app.include_router(users.router)
 app.include_router(dungeon.router)
+app.include_router(battle.router)
 
 @app.get("/")
 def read_root():

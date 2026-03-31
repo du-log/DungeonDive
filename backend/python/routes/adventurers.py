@@ -169,4 +169,30 @@ def toggle_party_member(adv_id: int):
     finally:
         con.close()
 
+
+@router.post("/toggle/combat_party/{adv_id}")
+def toggle_combat_party_member(adv_id: int):
+    con = get_db_con()
+    try:
+        adv = con.execute('SELECT in_combat_party FROM adventurers WHERE id = ? AND user_id = 1', (adv_id,)).fetchone()
+        if not adv:
+            raise HTTPException(status_code=404, detail="Adventurer not found")
+        
+        if adv['in_combat_party']:
+            con.execute('UPDATE adventurers SET in_combat_party = FALSE WHERE id = ?', (adv_id,))
+            message = "Adventurer removed from combat party."
+        else:
+            combat_party_count = con.execute('SELECT COUNT(*) FROM adventurers WHERE user_id = 1 AND in_combat_party = TRUE').fetchone()[0]
+            if combat_party_count >= 4:
+                raise HTTPException(status_code=400, detail="Combat party is full! Max 4 adventurers allowed.")
+            con.execute('UPDATE adventurers SET in_combat_party = TRUE WHERE id = ?', (adv_id,))
+            message = "Adventurer added to combat party."
+
+        con.commit()
+        return {"message": message}
+    except Exception as e:
+        con.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
 #

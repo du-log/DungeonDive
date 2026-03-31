@@ -12,7 +12,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
     return (
         <div className='relative h-full w-full flex flex-col items-center justify-center'>
             {activeTab === 'map' && (
-                <div className='relative h-full flex flex-col items-center justify-center gap-20 md:gap-10 p-10 m-10 w-full border-4 rounded-4xl'>
+                <div className='flex-grow flex flex-col items-center justify-center gap-10 p-10 mt-10 mb-10 w-full border-4 rounded-4xl'>
                     <button onClick={() => setTab('guild')} className='btn btn-xl btn-primary w-fit h-fit text-xl p-2'>
                         <Castle size={40} />
                         Guild Hall
@@ -30,16 +30,16 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                         <Swords size={40} />
                         Enter Dungeon ({partyData.length}/4)
                     </button>
-                    <button onClick={() => setView('battle')}
-                    className={`btn btn-xl w-fit h-fit text-xl p-2 ${partyData.length === 0 ? 'btn-disabled' : 'btn-secondary'}`}>
+                    <button onClick={() => setView('battle-setup')}
+                    className={`btn btn-xl w-fit h-fit text-xl p-2`}>
                         <Swords size={40} />
-                        Enter Battle (Preview)
+                        Setup for Battle
                     </button>
 
                 </div>
             )}
             {activeTab === 'guild' && (
-                <div className='relative h-full flex flex-col items-center justify-center md:gap-10 p-10 m-10 w-full border-4 rounded-4xl'>
+                <div className='flex flex-col items-center justify-center gap-10 p-10 mt-10 mb-10 w-full border-4 rounded-4xl'>
 
                     { rosterData ? 
                     <GuildHall
@@ -56,7 +56,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                 </div>
             )}
             {activeTab === 'tavern' && (
-                <div className='relative h-full flex flex-col items-center justify-center md:gap-10 p-10 m-10 w-full border-4 rounded-4xl'>
+                <div className='flex flex-col items-center justify-center gap-10 p-10 mt-10 mb-10 w-full border-4 rounded-4xl'>
 
                     {rosterData ? 
                     <Tavern 
@@ -69,7 +69,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                 </div>
             )}
             {activeTab === 'infirmary' && (
-                <div className='relative h-full flex flex-col items-center justify-center gap-1 p-10 m-10 w-full border-4 rounded-4xl'>
+                <div className='flex flex-col items-center justify-center gap-1 p-10 m-10 w-full border-4 rounded-4xl'>
 
                     {rosterData ? 
                     <Infirmary 

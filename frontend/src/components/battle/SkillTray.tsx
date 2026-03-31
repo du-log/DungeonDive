@@ -4,8 +4,8 @@ function SkillTray( {activeAdventurer, onUseSkill, onAttack} ) {
             <div className="flex gap-2">
                 {[1, 2, 3].map(slot => (
                 <button key={slot} className="btn btn-square btn-outline btn-secondary"
-                disabled={activeAdventurer[`skill_${slot}_cd`] > 0}>
-                    S{slot}
+                /*disabled={activeAdventurer[`skill_${slot}_cd`] > 0}*/>
+                    S{/*slot*/}
                 </button>
                 ))}
             </div>

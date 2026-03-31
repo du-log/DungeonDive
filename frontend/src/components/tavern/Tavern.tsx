@@ -8,7 +8,7 @@ function Tavern({ refreshData }) {
         })
         if (res.ok) {
             refreshData()
-            alert("Recruited an adventurer!")
+            //alert("Recruited an adventurer!")
         } else {
             alert("Not enough gold!")
         }

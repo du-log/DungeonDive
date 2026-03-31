@@ -15,8 +15,8 @@ function Roster({ adventurersData, refreshData, partyData, togglePartyMember }) 
     }
 
     return(
-        <div className="relative w-full h-full border overflow-y-auto scrollbar-thin">
-            <div className="grid grid-cols-1 md:grid-cols-4 md:scale-80 relative h-full w-full justify-items-center p-5">
+        <div className="flex-grow overflow-y-auto p-5">
+            <div className=" grid grid-cols-4 justify-items-center gap-5 p-5 border border-white">
                 {adventurersData?.map((char) => (
                     <AdventurerCard 
                     key={char.id}
