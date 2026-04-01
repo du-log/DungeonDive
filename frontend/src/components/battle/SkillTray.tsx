@@ -1,4 +1,4 @@
-function SkillTray( {activeAdventurer, onUseSkill, onAttack} ) {
+function SkillTray( {activeAdventurer, onUseSkill, onAttack, targetId} ) {
     return (
         <div className="flex flex-col relative h-full w-full items-center gap-4 bg-base-300 p-4 rounded-t-2xl border-t border-primary/30">
             <div className="flex gap-2">
@@ -10,8 +10,9 @@ function SkillTray( {activeAdventurer, onUseSkill, onAttack} ) {
                 ))}
             </div>
         
-            <button onClick={onAttack}
-            className="btn btn-primary btn-wide btn-lg shadow-lg shadow-primary/40 animate-pulse">
+            <button onClick={ () => onAttack(targetId) }
+            disabled={!activeAdventurer || !targetId}
+            className={`btn btn-primary btn-wide btn-lg shadow-lg shadow-primary/40 ${!activeAdventurer || !targetId ? 'opacity-50' : 'animate-pulse'}`}>
                 ATTACK
             </button>
         </div>

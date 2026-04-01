@@ -5,7 +5,7 @@ import Tavern from '../components/tavern/Tavern'
 import { Castle, Beer, Hospital, Swords } from 'lucide-react'
 import Infirmary from '../components/infirmary/Infirmary'
 
-function TownView( {rosterData, refreshData, partyData, togglePartyMember, setView} ) {
+function TownView( {rosterData, refreshData, partyData, togglePartyMember, setView, activeBattleId} ) {
     const [activeTab, setTab] = useState('map')
     const [activeSubTab, setSubTab] = useState<boolean | null>(false)
 
@@ -30,10 +30,10 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                         <Swords size={40} />
                         Enter Dungeon ({partyData.length}/4)
                     </button>
-                    <button onClick={() => setView('battle-setup')}
+                    <button onClick={() => activeBattleId ? setView('battle') : setView('battle-setup')}
                     className={`btn btn-xl w-fit h-fit text-xl p-2`}>
                         <Swords size={40} />
-                        Setup for Battle
+                        {activeBattleId ? "Resume Battle" : "Setup for Battle"}
                     </button>
 
                 </div>

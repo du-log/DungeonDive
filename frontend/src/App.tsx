@@ -11,6 +11,9 @@ function App() {
   const [infoData, setInfo] = useState<any>(null)
   const [rosterData, setRoster] = useState<any>(null)
   const [battleCombatants, setBattleCombatants] = useState<any[]>([])
+  const [activeBattleId, setActiveBattleId] = useState<number | null>(null)
+  const [activeUnitId, setActiveUnitId] = useState<number | null>(null)
+  const [targetId, setTargetId] = useState<number | null>(null)
 
   const partyData = rosterData ? rosterData.adventurers.filter((adv) => adv.in_party).map((adv) => adv.id) : []
   const combatPartyData = rosterData ? rosterData.adventurers.filter((adv) => adv.in_combat_party).map((adv) => adv.id) : []
@@ -21,6 +24,16 @@ function App() {
 
     const rosterRes = await fetch('http://127.0.0.1:8000/adventurer/roster')
     setRoster(await rosterRes.json())
+
+    const combatRes = await fetch('http://127.0.0.1:8000/battle/combatants')
+    const combatData = await combatRes.json()
+
+    if (combatData.combatants && combatData.combatants.length > 0) {
+      setBattleCombatants(combatData.combatants)
+      setActiveBattleId(combatData.combatants[0].battle_id)
+    } else {
+      setActiveBattleId(null)
+    }
   }
 
   const togglePartyMember = async (id: number) => {
@@ -69,6 +82,88 @@ function App() {
     setBattleCombatants(data.combatants)
   }
 
+  const handleBattleTick = async () => {
+    const res = await fetch('http://127.0.0.1:8000/battle/turn-tick', {
+      method: 'POST',
+    })
+    const data = await res.json()
+    if(data.turn_ready) {
+      setActiveUnitId(data.active_unit_id)
+
+      if(data.unit_type === 'enemy') {
+        const combatRes = await fetch('http://127.0.0.1:8000/battle/combatants')
+        const combatData = await combatRes.json()
+
+        setTimeout(async () => {
+          const playerTarget = combatData.combatants.find(c => c.unit_type === 'adventurer' && c.current_hp > 0)
+          if(playerTarget) {
+            executeAttackAI(playerTarget.id, data.active_unit_id)
+          } else {
+            console.log("No valid player targets found!")
+            setActiveUnitId(null)
+          }
+        }, 1000)
+      }
+    }
+    await fetchBattleData()
+  }
+
+  const executeAttack = async (targetId: number) => {
+    if(!activeUnitId || !targetId) return
+
+    const res = await fetch(`http://127.0.0.1:8000/battle/attack-enemy?attacker_id=${activeUnitId}&target_id=${targetId}`, {
+      method: 'POST'
+    })
+
+    if(res.ok) {
+      setActiveUnitId(null)
+      setTargetId(null)
+      await fetchBattleData()
+    }
+  }
+
+  const executeAttackAI = async (forcedTargetId?: number, forcedAttackerId?: number) => {
+    const finalAttackerId = forcedAttackerId || activeUnitId
+    const finalTargetId = forcedTargetId || targetId
+
+    if(!finalAttackerId || !finalTargetId) return
+
+    const res = await fetch(`http://127.0.0.1:8000/battle/attack-enemy?attacker_id=${finalAttackerId}&target_id=${finalTargetId}`, {
+      method: 'POST'
+    })
+
+    if (res.ok) {
+      setActiveUnitId(null)
+      setTargetId(null)
+      await fetchBattleData()
+    }
+  }
+
+  const checkBattleEnd = (combatants: any[]) => {
+    const aliveEnemies = combatants.filter(c => c.unit_type === 'enemy' && c.current_hp > 0)
+    const aliveHeroes = combatants.filter(c => c.unit_type === 'adventurer' && c.current_hp > 0)
+
+    if(aliveEnemies.length === 0) {
+      alert("Victory!")
+      endBattle()
+
+    } else if (aliveHeroes.length === 0) {
+      alert("Defeat...")
+      endBattle()
+    }
+  }
+
+  const endBattle = async () => {
+    await fetch('http://127.0.0.1:8000/battle/clear', { method: 'POST' })
+
+    setActiveBattleId(null)
+    setActiveUnitId(null)
+    setBattleCombatants([])
+
+    setView('town')
+    await fetchAllData()
+  }
+
   useEffect(() => {
     fetchAllData()
   }, [])
@@ -98,6 +193,7 @@ function App() {
         partyData={partyData}
         togglePartyMember={togglePartyMember} 
         setView={setView}
+        activeBattleId={activeBattleId}
         />}
 
         {view === 'dungeon' && 
@@ -121,7 +217,14 @@ function App() {
         <BattleView
         setView={setView}
         combatants={battleCombatants}
-        activeUnitId={battleCombatants.find(c => c.readiness >= 100)?.id || null}
+        activeUnitId={activeUnitId}
+        targetId={targetId}
+        setTargetId={setTargetId}
+        handleBattleTick={handleBattleTick}
+        fetchBattleData={fetchBattleData}
+        executeAttack={executeAttack}
+        checkBattleEnd={checkBattleEnd}
+        endBattle={endBattle}
         />}
       </main>
       <footer className='flex-end relative h-fit border-t'>

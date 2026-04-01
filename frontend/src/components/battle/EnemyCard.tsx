@@ -1,9 +1,9 @@
 function EnemyCard( {enemy, isTargeted, onSelect}  ) {
-    //const hpPercent = (enemy.current_hp / enemy.max_hp) * 100;
     return (
         <div className="relative md:scale-70 h-full w-full">
-            <div onClick={ () => onSelect(enemy.id) }
-                className={`card bg-base-100 shadow-xl w-75 h-full cursor-pointer ${isTargeted ? 'ring-4 ring-red-500' : ''}`}>
+            <div onClick={ () => !enemy.is_dead && onSelect(enemy.id) }
+                className={`card bg-base-100 shadow-xl w-75 h-full cursor-pointer ${isTargeted ? 'ring-4 ring-red-500' : ''}
+                ${enemy.is_dead ? 'grayscale' : ''}`}>
                 <div className="card-body">
                     <h2 className="card-title justify-center">{enemy.name}</h2>
                     <p>Level: {enemy.level}</p>

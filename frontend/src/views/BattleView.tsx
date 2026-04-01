@@ -1,14 +1,22 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import CombatHUD from '../components/battle/CombatHUD'
 import EnemyGrip from '../components/battle/EnemyGrip'
 import ActionLog from '../components/battle/ActionLog'
 
-function BattleView( {setView, combatants, activeUnitId} ) {
-    const [targetId, setTargetId] = useState<number | null>(null);
-
+function BattleView( {setView, combatants, activeUnitId, targetId, setTargetId, handleBattleTick, fetchBattleData, executeAttack, checkBattleEnd, endBattle} ) {
     const enemies = combatants.filter(c => c.unit_type === 'enemy')
     const heroes = combatants.filter(h => h.unit_type === 'adventurer')
     const activeAdventurer = heroes.find(h => h.id === activeUnitId)
+
+    useEffect(() => {
+        if (activeUnitId === null) {
+            const interval = setInterval(() => {
+                handleBattleTick()
+            }, 200)
+            return () => clearInterval(interval)
+        }
+        checkBattleEnd(combatants)
+    }, [activeUnitId])
 
     return (
         <div className='flex flex-col h-full w-full items-center pt-2 pb-2 overflow-hidden'>
@@ -22,10 +30,11 @@ function BattleView( {setView, combatants, activeUnitId} ) {
                     <CombatHUD 
                         activeAdventurer={activeAdventurer}
                         onUseSkill={() => {}}
-                        onAttack={() => {/*handleAttack(targetId)*/}} 
-                        party={heroes} />
+                        onAttack={executeAttack} 
+                        party={heroes}
+                        targetId={targetId} />
                 </div>
-            <button onClick={() => setView('town')} className="btn btn-secondary btn-sm w-fit">Flee to Town</button>
+            <button onClick={() => endBattle()} className="btn btn-secondary btn-sm w-fit">Flee to Town</button>
         </div>
     );
 }
