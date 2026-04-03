@@ -138,6 +138,32 @@ def get_logs():
     finally:
         con.close()
 
+def sync_combatant_hp():
+    con = get_db_con()
+    cur = con.cursor()
+
+    try:
+        cur.execute("""
+            UPDATE adventurers
+            SET current_hp = (
+                SELECT current_hp
+                FROM combatants
+                WHERE combatants.unit_id = adventurers.id
+                AND combatants.unit_type = 'adventurer'
+            )
+            WHERE EXISTS (
+                SELECT 1
+                FROM combatants
+                WHERE combatants.unit_id = adventurers.id
+                AND combatants.unit_type = 'adventurer'
+            )
+        """)
+        con.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
 @router.post('/attack-enemy')
 def battle_attack(attacker_id: int, target_id: int):
     con = get_db_con()
@@ -196,6 +222,8 @@ def battle_attack(attacker_id: int, target_id: int):
 async def battle_end():
     con = get_db_con()
     try:
+        sync_combatant_hp()
+
         con.execute('DELETE FROM combatants')
         con.commit()
 

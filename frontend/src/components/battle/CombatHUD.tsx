@@ -7,7 +7,8 @@ function CombatHUD( {activeAdventurer, onUseSkill, onAttack, party, targetId} ) 
                 {party.map(hero => (
                     <div key={hero.id} 
                     className={`p-2 w-40 h-40 border rounded-lg 
-                    ${hero.id === activeAdventurer?.id ? 'border-primary' : 'border-base-100'}
+                    ${hero.id === activeAdventurer?.id ? 'ring-4 ring-blue-500' : ''}
+                    ${targetId === hero.id ? 'ring-4 ring-red-500' : ''}
                     ${hero.is_dead ? 'grayscale' : ''}`}>
                         <p>{hero.name}</p>
                         <progress className="progress progress-success h-2 w-full"

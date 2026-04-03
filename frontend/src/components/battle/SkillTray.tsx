@@ -10,7 +10,7 @@ function SkillTray( {activeAdventurer, onUseSkill, onAttack, targetId} ) {
                 ))}
             </div>
         
-            <button onClick={ () => onAttack(targetId) }
+            <button onClick={ () => onAttack(targetId, activeAdventurer.id) }
             disabled={!activeAdventurer || !targetId}
             className={`btn btn-primary btn-wide btn-lg shadow-lg shadow-primary/40 ${!activeAdventurer || !targetId ? 'opacity-50' : 'animate-pulse'}`}>
                 ATTACK

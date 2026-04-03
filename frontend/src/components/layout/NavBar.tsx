@@ -15,6 +15,7 @@ function NavBar({ view, infoDataGold, infoDataUsername, partyData }) {
                 {view === 'dungeon' && `In Dungeon`}
                 {view === 'battle' && `In Battle`}
                 {view === 'battle-setup' && `Setting Up`}
+                {view === 'results' && `Battle Results`}
             </div>
             <div className='flex flex-end relative h-fit w-[1/3] items-center justify-center p-1 gap-[2vw]'>
                 <div className='badge badge-warning p-5 relative w-fit'>
