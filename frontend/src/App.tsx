@@ -18,6 +18,14 @@ function App() {
   const partyData = rosterData ? rosterData.adventurers.filter((adv) => adv.in_party).map((adv) => adv.id) : []
   const combatPartyData = rosterData ? rosterData.adventurers.filter((adv) => adv.in_combat_party).map((adv) => adv.id) : []
 
+  const [battleLogs, setBattleLogs] = useState<string[]>([])
+
+    const fetchLogs = async () => {
+        const res = await fetch('http://127.0.0.1:8000/battle/logs')
+        const data = await res.json()
+        setBattleLogs(data.logs.map((l: any) => l.message))
+    }
+
   const fetchAllData = async() => {
     const infoRes = await fetch('http://127.0.0.1:8000/user/info')
     setInfo(await infoRes.json())
@@ -72,6 +80,7 @@ function App() {
     })
     if (res.ok) {
       await fetchBattleData()
+      await fetchLogs()
       setView('battle')
     }
   }
@@ -118,6 +127,7 @@ function App() {
 
     if(res.ok) {
       const fresh = await fetchBattleData()
+      fetchLogs()
       setActiveUnitId(null)
       setTargetId(null)
 
@@ -139,6 +149,7 @@ function App() {
 
     if (res.ok) {
       const fresh = await fetchBattleData()
+      fetchLogs()
       setActiveUnitId(null)
       setTargetId(null)
       
@@ -228,7 +239,7 @@ function App() {
         targetId={targetId}
         setTargetId={setTargetId}
         handleBattleTick={handleBattleTick}
-        fetchBattleData={fetchBattleData}
+        battleLogs={battleLogs}
         executeAttack={executeAttack}
         endBattle={endBattle}
         />}

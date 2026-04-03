@@ -3,7 +3,7 @@ import CombatHUD from '../components/battle/CombatHUD'
 import EnemyGrip from '../components/battle/EnemyGrip'
 import ActionLog from '../components/battle/ActionLog'
 
-function BattleView( { combatants, activeUnitId, targetId, setTargetId, handleBattleTick, fetchBattleData, executeAttack, endBattle } ) {
+function BattleView( { combatants, activeUnitId, targetId, setTargetId, handleBattleTick, battleLogs, executeAttack, endBattle } ) {
     const enemies = combatants.filter(c => c.unit_type === 'enemy')
     const heroes = combatants.filter(h => h.unit_type === 'adventurer')
     const activeAdventurer = heroes.find(h => h.id === activeUnitId)
@@ -22,8 +22,9 @@ function BattleView( { combatants, activeUnitId, targetId, setTargetId, handleBa
             <div className='h-1/3 w-full p-4 flex flex-col justify-center items-center'>
                 <EnemyGrip enemies={enemies} targetedEnemyId={targetId} onSelectEnemy={setTargetId} />
             </div>
-            <div className='flex-grow overflow-y-auto p-4'>
-                <ActionLog />
+            <div className='h-full w-2/3 overflow-y-auto p-4'>
+                <ActionLog
+                    battleLogs={battleLogs} />
             </div>
             <div className='h-1/3 p-4'>
                 <CombatHUD 

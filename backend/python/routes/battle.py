@@ -42,6 +42,8 @@ async def battle_start():
         """, ('enemy', monster['id'], monster['max_hp'], monster['max_hp'], initial_cr, i))
 
     con.commit()
+
+    log_battle_event(1, "Starting Battle...")
     return {"status": "battle_started", "enemy_count": monster_count}
 
 @router.get('/combatants')
@@ -114,6 +116,28 @@ def battle_turn_tick():
     finally:
         con.close()
 
+def log_battle_event(battle_id: int, message: str):
+    con = get_db_con()
+    con.execute('INSERT INTO battle_logs (battle_id, message) VALUES(?, ?)', (battle_id, message,))
+    con.commit()
+    con.close()
+
+@router.get('/logs')
+def get_logs():
+    con = get_db_con()
+    cur = con.cursor()
+
+    try:
+        rows = cur.execute('SELECT message, created_at FROM battle_logs ORDER BY id DESC LIMIT 50').fetchall()
+        if not rows:
+            raise HTTPException(status_code=500, detail="Logs not found")
+
+        return { "logs": [dict(row) for row in reversed(rows)] }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
 @router.post('/attack-enemy')
 def battle_attack(attacker_id: int, target_id: int):
     con = get_db_con()
@@ -152,8 +176,14 @@ def battle_attack(attacker_id: int, target_id: int):
 
         con.commit()
 
+        msg = f"{attacker['name']} dealt {damage} damage to {target['name']}!"
+        log_battle_event(1, msg)
+
+        if is_dead == 1:
+            log_battle_event(1, f"{target['name']} has been slain!")
+
         return {
-            "message": f"{attacker['name']} dealt {damage} damage to {target['name']}!",
+            "message": msg,
             "target_hp": new_hp,
             "is_dead": is_dead
         }
@@ -168,6 +198,10 @@ async def battle_end():
     try:
         con.execute('DELETE FROM combatants')
         con.commit()
+
+        con.execute('DELETE FROM battle_logs')
+        con.commit()
+
         return { "status": "cleared" }
     finally:
         con.close()

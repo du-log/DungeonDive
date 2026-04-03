@@ -113,6 +113,16 @@ def init_db():
         )
     ''')
 
+    #Battle Logs Table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS battle_logs (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        battle_id INTEGER,
+        message TEXT NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        )
+    ''')
+
     # Seed initial data
     cur.execute('SELECT count(*) FROM users')
     if cur.fetchone()[0] == 0:
