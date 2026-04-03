@@ -80,6 +80,7 @@ function App() {
     const res = await fetch('http://127.0.0.1:8000/battle/combatants')
     const data = await res.json()
     setBattleCombatants(data.combatants)
+    return data.combatants
   }
 
   const handleBattleTick = async () => {
@@ -116,9 +117,13 @@ function App() {
     })
 
     if(res.ok) {
+      const fresh = await fetchBattleData()
       setActiveUnitId(null)
       setTargetId(null)
-      await fetchBattleData()
+
+      setTimeout(() => {
+        checkBattleEnd(fresh)
+      }, 500)
     }
   }
 
@@ -133,20 +138,23 @@ function App() {
     })
 
     if (res.ok) {
+      const fresh = await fetchBattleData()
       setActiveUnitId(null)
       setTargetId(null)
-      await fetchBattleData()
+      
+      setTimeout(() => {
+        checkBattleEnd(fresh)
+      }, 500)
     }
   }
 
-  const checkBattleEnd = (combatants: any[]) => {
+  const checkBattleEnd = async (combatants: any[]) => {
     const aliveEnemies = combatants.filter(c => c.unit_type === 'enemy' && c.current_hp > 0)
     const aliveHeroes = combatants.filter(c => c.unit_type === 'adventurer' && c.current_hp > 0)
 
     if(aliveEnemies.length === 0) {
       alert("Victory!")
       endBattle()
-
     } else if (aliveHeroes.length === 0) {
       alert("Defeat...")
       endBattle()
@@ -215,7 +223,6 @@ function App() {
 
         {view === 'battle' && 
         <BattleView
-        setView={setView}
         combatants={battleCombatants}
         activeUnitId={activeUnitId}
         targetId={targetId}
@@ -223,7 +230,6 @@ function App() {
         handleBattleTick={handleBattleTick}
         fetchBattleData={fetchBattleData}
         executeAttack={executeAttack}
-        checkBattleEnd={checkBattleEnd}
         endBattle={endBattle}
         />}
       </main>

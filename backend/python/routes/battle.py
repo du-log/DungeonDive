@@ -28,12 +28,13 @@ async def battle_start():
             VALUES (?, ?, ?, ?, ?, ?)
             """, ('adventurer', hero['id'], hero['current_hp'], hero['max_hp'], initial_cr, i))
 
-    monster_count = random.randint(1, 3)
-    monsters = con.execute(
-        'SELECT * FROM enemies ORDER BY RANDOM() LIMIT ?', (monster_count,)
+    monster_count = random.randint(1, 4)
+    monsters_choice = con.execute(
+        'SELECT * FROM enemies'
     ).fetchall()
 
-    for i, monster in enumerate(monsters):
+    for i in range(monster_count):
+        monster = random.choice(monsters_choice)
         initial_cr = random.uniform(0, 5.0)
         con.execute("""
             INSERT INTO combatants (unit_type, unit_id, current_hp, max_hp, readiness, position)
