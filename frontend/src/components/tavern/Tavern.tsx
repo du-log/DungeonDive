@@ -2,8 +2,8 @@ import TavernMenu from "./TavernMenu"
 
 function Tavern({ refreshData }) {
 
-    const recruit = async() => {
-        const res = await fetch('http://127.0.0.1:8000/adventurer/recruit', {
+    const recruit = async (id: number) => {
+        const res = await fetch(`http://127.0.0.1:8000/adventurer/recruit/${id}`, {
             method: 'POST',
         })
         if (res.ok) {

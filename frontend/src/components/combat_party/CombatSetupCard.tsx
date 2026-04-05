@@ -4,7 +4,7 @@ function CombatSetupCard( {data, toggleCombatMember, isSelected} ) {
         ${isSelected ? 'border-success' : 'border-transparent'}`}>
             <div className="flex flex-col p-2 items-center">
                 <h3 className="font-bold text-sm">{data.name}</h3>
-                <div className="badge badge-secondary text-xs">{data.class}</div>
+                <div className="badge badge-secondary text-xs">{data.class_id}</div>
                 <div className="flex flex-col items-center justify-center gap-2">
                     <div>
                         <p className="text-xs">HP: {data.current_hp}/{data.max_hp}</p>

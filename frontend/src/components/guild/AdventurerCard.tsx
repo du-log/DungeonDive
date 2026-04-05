@@ -26,10 +26,7 @@ function AdventurerCard({ data, refreshData, partyData, togglePartyMember }) {
                     <div className="flex flex-col items-center gap-2">
                         <h2 className="card-title">{data.name}</h2>
                         <div className="flex flex-col items-center">
-                            {data.class === "Warrior" && <Square size={40} className="text-red-500" />}
-                            {data.class === "Paladin" && <Triangle size={40} className="text-blue-500" />}
-                            {data.class === "Mage" && <Circle size={40} className="text-green-500" />}
-                            {data.class === "Cleric" && <Pentagon size={40} className="text-yellow-500" />}
+                            {data.class_id}
                         </div>
                     </div>
                     <p>Level: {data.level}</p>
@@ -59,22 +56,10 @@ function AdventurerCard({ data, refreshData, partyData, togglePartyMember }) {
                             <h3 className="font-bold text-lg">{data.name}</h3>
                             <p>Class: {data.class}</p>
                             <div className="flex flex-col items-center">
-                                {data.class === "Warrior" && <Square size={40} className="text-red-500" />}
-                                {data.class === "Paladin" && <Triangle size={40} className="text-blue-500" />}
-                                {data.class === "Mage" && <Circle size={40} className="text-green-500" />}
-                                {data.class === "Cleric" && <Pentagon size={40} className="text-yellow-500" />}
+                                {data.class_id}
                             </div>
                             <div className="flex flex-row justify-center items-center">
-                                {data.tier === 1 && <Star size={15} className="text-yellow-500" />}
-                                {data.tier === 2 && (<>
-                                    <Star size={15} className="text-yellow-500" />
-                                    <Star size={15} className="text-yellow-500" />
-                                </>)}
-                                {data.tier === 3 && (<>
-                                    <Star size={15} className="text-yellow-500" />
-                                    <Star size={15} className="text-yellow-500" />
-                                    <Star size={15} className="text-yellow-500" />
-                                </>)}
+                                {}
                             </div>
                             <p>Level: {data.level}</p>
                             <p>XP: {data.experience}</p>

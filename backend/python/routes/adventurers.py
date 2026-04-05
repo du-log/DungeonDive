@@ -39,31 +39,59 @@ def get_stats():
 
     return roster
 
-@router.post("/recruit")
-def recruit():
+@router.post("/recruit/{class_id}")
+def recruit(class_id: int):
     con = get_db_con()
-    RECRUIT_COST = 100
+    cur = con.cursor()
 
     try:
+        if class_id == 0:
+            classes = con.execute('SELECT * FROM classes WHERE tier = 1').fetchall()
+            selected_class = random.choice(classes)
+            recruit_cost = int(selected_class['recruitment_cost'] * 0.8)
+        else:
+            selected_class = con.execute('SELECT * FROM classes WHERE id = ?', (class_id,)).fetchone()
+            if not selected_class:
+                raise HTTPException(status_code=500, detail="Class not found.")
+            recruit_cost = selected_class['recruitment_cost']
+
         user = con.execute('SELECT gold FROM users WHERE id = 1').fetchone()
-        if user['gold'] < RECRUIT_COST:
+        if user['gold'] < recruit_cost:
             raise HTTPException(status_code=400, detail='Not enough gold!')
         
-        con.execute('UPDATE users SET gold = gold - ? WHERE id = 1', (RECRUIT_COST,))
+        con.execute('UPDATE users SET gold = gold - ? WHERE id = 1', (recruit_cost,))
 
-        names = ['John', 'Sarah', 'Mary', 'Henry', 'Sam', 'Jane']
+        names = ['John', 'Sarah', 'Mary', 'Henry', 'Sam', 'Jane', 'Valerius', 'Elowen']
         new_name = random.choice(names)
 
-        classes = ['Warrior', 'Mage', 'Cleric', 'Paladin']
-        new_class = random.choice(classes)
+        def roll_variant(base_stat): return base_stat + random.randint(1, 5)
 
-        con.execute(
-            'INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)',
-            (1, new_name, new_class,)
-        )
+        stats = {
+            "hp": roll_variant(selected_class['base_hp']),
+            "str": roll_variant(selected_class['base_str']),
+            "dex": roll_variant(selected_class['base_dex']),
+            "int": roll_variant(selected_class['base_int']),
+            "will": roll_variant(selected_class['base_will']),
+            "luck": roll_variant(selected_class['base_luck']),
+            "spd": selected_class['base_speed'] + random.uniform(0.1, 2.0)
+        }
+
+        cur.execute('''
+            INSERT INTO adventurers (
+                user_id, name, class_id, max_hp, current_hp, 
+                str, dex, int, will, luck, speed
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        ''', (
+            1, new_name, selected_class['id'], stats['hp'], stats['hp'],
+            stats['str'], stats['dex'], stats['int'], stats['will'], stats['luck'], stats['spd']
+        ))
 
         con.commit()
-        return {"message": f"Recruited {new_class}, {new_name}!", "cost": RECRUIT_COST}
+        return {
+            "message": f"Recruited {selected_class['class_name']}, {new_name}!",
+            "cost": recruit_cost,
+            "stats": stats
+        }
     except Exception as e:
         con.rollback()
         raise HTTPException(status_code=500, detail=str(e))

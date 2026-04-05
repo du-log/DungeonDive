@@ -56,7 +56,7 @@ def get_combatants():
             c.*,
             COALESCE(a.name, e.name) AS name,
             COALESCE(a.level, e.level) AS level,
-            a.class AS adventurer_class
+            a.class_id AS adventurer_class
         FROM combatants c
         LEFT JOIN adventurers a ON c.unit_id = a.id AND c.unit_type = 'adventurer'
         LEFT JOIN enemies e ON c.unit_id = e.id AND c.unit_type = 'enemy'
@@ -90,12 +90,6 @@ def battle_turn_tick():
 
         combatants = cur.execute(query).fetchall()
 
-        for unit in combatants:
-            new_readiness = unit['readiness'] + (unit['speed'] * 0.1)
-            cur.execute("UPDATE combatants SET readiness = ? WHERE id = ?", (new_readiness, unit['id']))
-
-        con.commit()
-
         active_unit = cur.execute("""
             SELECT id, unit_type, unit_id
             FROM combatants
@@ -109,6 +103,12 @@ def battle_turn_tick():
                 "active_unit_id": active_unit['id'],
                 "unit_type": active_unit['unit_type']
             }
+
+        for unit in combatants:
+            new_readiness = unit['readiness'] + (unit['speed'] * 0.1)
+            cur.execute("UPDATE combatants SET readiness = ? WHERE id = ?", (new_readiness, unit['id']))
+
+        con.commit()
 
         return { "turn_ready": False }
     except sqlite3.OperationError as e:
@@ -214,6 +214,130 @@ def battle_attack(attacker_id: int, target_id: int):
             "is_dead": is_dead
         }
     except sqlite3.OperationError as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+def calculate_level_up(adventurer_id, gained_xp):
+    con = get_db_con()
+    cur = con.cursor()
+
+    try:
+        # 1. Fetch Adventurer and their Class Growth rates
+        query = """
+            SELECT 
+                a.*,
+                c.hp_growth,
+                c.str_growth,
+                c.dex_growth,
+                c.int_growth, 
+                c.will_growth,
+                c.luck_growth,
+                c.speed_growth
+            FROM adventurers a
+            JOIN classes c ON a.class_id = c.id
+            WHERE a.id = ?
+        """
+        adv = cur.execute(query, (adventurer_id,)).fetchone()
+        
+        new_xp = adv['experience'] + gained_xp
+        new_level = adv['level']
+        req_xp = adv['required_experience']
+        
+        # Trackers for the "Results" screen
+        levels_gained = 0
+        stats_gained = {"hp": 0, "str": 0, "dex": 0, "int": 0, "will": 0, "luck": 0, "spd": 0.0}
+
+        # 2. Recursive Overflow Loop
+        while new_xp >= req_xp:
+            new_xp -= req_xp
+            new_level += 1
+            levels_gained += 1
+            
+            # Apply Growths
+            stats_gained["hp"] += adv['hp_growth']
+            stats_gained["str"] += adv['str_growth']
+            stats_gained["dex"] += adv['dex_growth']
+            stats_gained["int"] += adv['int_growth']
+            stats_gained["will"] += adv['will_growth']
+            stats_gained["luck"] += adv['luck_growth']
+            stats_gained["spd"] += adv['speed_growth']
+            
+            # Optional: Increase the requirement for the next level
+            # req_xp = int(req_xp * 1.2) 
+
+        # 3. Update the Database
+        if levels_gained > 0:
+            cur.execute("""
+                UPDATE adventurers SET 
+                    level = ?, experience = ?, required_experience = ?,
+                    max_hp = max_hp + ?, current_hp = current_hp + ?,
+                    str = str + ?, dex = dex + ?, int = int + ?,
+                    will = will + ?, luck = luck + ?, speed = speed + ?,
+                    stat_points = stat_points + ?, skill_points = skill_points + ?
+                WHERE id = ?
+            """, (
+                new_level, new_xp, req_xp,
+                stats_gained["hp"], stats_gained["hp"], # Heal for the amount gained
+                stats_gained["str"], stats_gained["dex"], stats_gained["int"],
+                stats_gained["will"], stats_gained["luck"], stats_gained["spd"],
+                levels_gained * 5, levels_gained * 1, # Grant points per level
+                adventurer_id
+            ))
+        else:
+            # Just update XP if no level up occurred
+            cur.execute("UPDATE adventurers SET experience = ? WHERE id = ?", (new_xp, adventurer_id))
+
+        con.commit()
+        
+        return {
+            "levels_gained": levels_gained,
+            "new_level": new_level,
+            "stats_gained": stats_gained
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+@router.post('/process-rewards')
+async def process_rewards():
+    con = get_db_con()
+    cur = con.cursor()
+
+    try:
+        query = """
+            SELECT SUM(e.xp_reward) as total_xp, SUM(e.gold_reward) as total_gold
+            FROM combatants c
+            JOIN enemies e ON c.unit_id = e.id
+            WHERE c.unit_type = 'enemy' AND c.is_dead = 1
+        """
+        rewards = cur.execute(query).fetchone()
+        total_xp = rewards['total_xp'] or 0
+        total_gold = rewards['total_gold'] or 0
+
+        heroes = cur.execute("SELECT unit_id FROM combatants WHERE unit_type = 'adventurer'").fetchall()
+        divisor = len(heroes)
+        per_hero_xp = total_xp / divisor
+
+        party_reports = []
+        for hero in heroes:
+            report = calculate_level_up(hero['unit_id'], per_hero_xp)
+            party_reports.append({
+                "hero_id": hero['unit_id'],
+                "report": report
+            })
+
+        cur.execute("UPDATE users SET gold = gold + ? WHERE ID = 1", (total_gold,))
+
+        con.commit()
+
+        return {
+            "xp_per_hero": per_hero_xp,
+            "total_gold": total_gold,
+            "party_reports": party_reports
+        }
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         con.close()

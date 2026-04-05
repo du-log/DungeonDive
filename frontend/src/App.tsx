@@ -17,17 +17,27 @@ function App() {
   const [targetId, setTargetId] = useState<number | null>(null)
   const [battleOver, setBattleOver] = useState(false)
   const [resultOfBattle, setResultOfBattle] = useState<string | null>(null)
+  const [endRewards, setEndRewards] = useState<any>(null)
 
   const partyData = rosterData ? rosterData.adventurers.filter((adv) => adv.in_party).map((adv) => adv.id) : []
   const combatPartyData = rosterData ? rosterData.adventurers.filter((adv) => adv.in_combat_party).map((adv) => adv.id) : []
 
   const [battleLogs, setBattleLogs] = useState<string[]>([])
 
-    const fetchLogs = async () => {
-        const res = await fetch('http://127.0.0.1:8000/battle/logs')
-        const data = await res.json()
-        setBattleLogs(data.logs.map((l: any) => l.message))
+  const viewInDb = async (viewSet: any) => {
+    const res = await fetch(`http://127.0.0.1:8000/user/view/${viewSet}`, {
+      method: 'POST'
+    })
+    if (res.ok) {
+      console.log("DB View: " + viewSet + "Current View: " + view)
     }
+  }
+
+  const fetchLogs = async () => {
+    const res = await fetch('http://127.0.0.1:8000/battle/logs')
+    const data = await res.json()
+    setBattleLogs(data.logs.map((l: any) => l.message))
+  }
 
   const fetchAllData = async() => {
     const infoRes = await fetch('http://127.0.0.1:8000/user/info')
@@ -86,6 +96,7 @@ function App() {
       await fetchBattleData()
       await fetchLogs()
       setView('battle')
+      viewInDb('battle')
     }
   }
 
@@ -155,16 +166,25 @@ function App() {
 
 
 
-    if(aliveEnemies.length === 0 || aliveHeroes.length === 0) {
-      if(aliveEnemies.length === 0) {
-        setResultOfBattle('Victory!')
-      } else {
-        setResultOfBattle('Defeat...')
-      }
+    if(aliveEnemies.length === 0) {
+      setResultOfBattle('Victory!')
+      setBattleOver(true)
+      const res = await fetch('http://127.0.0.1:8000/battle/process-rewards', {
+        method: 'POST'
+      })
+      const data = await res.json()
+      setEndRewards(data)
+      setTimeout(() => {
+        setView('results')
+        viewInDb('results')
+      }, 1500)
+    } else if (aliveHeroes.length === 0) {
+      setResultOfBattle('Defeat...')
       setBattleOver(true)
       setTimeout(() => {
-      setView('results')
-    }, 1500)
+        setView('results')
+        viewInDb('results')
+      }, 1500)
     }
   }
 
@@ -172,6 +192,7 @@ function App() {
     setBattleOver(true)
     setResultOfBattle('Defeat')
     setView('results')
+    viewInDb('results')
   }
 
   const endBattle = async () => {
@@ -181,13 +202,26 @@ function App() {
     setActiveBattleId(null)
     setActiveUnitId(null)
     setBattleCombatants([])
+    setEndRewards(null)
 
     setView('town')
+    viewInDb('town')
     await fetchAllData()
   }
 
   useEffect(() => {
     fetchAllData()
+  }, [])
+
+  useEffect(() => {
+    const sync = async () => {
+      const res = await fetch('http://127.0.0.1:8000/user/info')
+      const data = await res.json()
+      if (data.current_view !== view) {
+        setView(data.current_view)
+      }
+    }
+    sync()
   }, [])
 
   if(!infoData || !rosterData) return (
@@ -253,6 +287,7 @@ function App() {
         endBattle={endBattle}
         resultOfBattle={resultOfBattle}
         combatants={battleCombatants}
+        endRewards={endRewards}
         />}
       </main>
       <footer className='flex-end relative h-fit border-t'>

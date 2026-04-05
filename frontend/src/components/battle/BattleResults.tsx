@@ -1,4 +1,4 @@
-function BattleResults( {endBattle, resultOfBattle, combatants} ) {
+function BattleResults( {endBattle, resultOfBattle, combatants, endRewards} ) {
     return (
         <div className="relative h-full w-full border border-white rounded-xl justify-items-center">
             <div className="flex flex-col h-fit w-fit justify-center items-center border border-white rounded-xl px-5 pb-5 gap-5">
@@ -8,14 +8,25 @@ function BattleResults( {endBattle, resultOfBattle, combatants} ) {
                     {combatants.filter(c => c.unit_type === 'adventurer').map(hero => (
                         <div key={hero.id} className="rounded-xl border border-white p-5">
                             <p className="font-bold">{hero.name}</p>
+                            <p className="">Level: {hero.level}</p>
                             <progress 
                                 className={`progress w-full ${hero.current_hp > 0 ? 'progress-success' : 'progress-error'}`} 
                                 value={hero.current_hp} 
                                 max={hero.max_hp} 
                             />
                             <p className="text-xs mt-1">{hero.current_hp} / {hero.max_hp} HP</p>
+                            <progress
+                                className={`progress w-full`}
+                                value={hero.experience}
+                                max={hero.required_experience}
+                            />
+                            <p className="text-xs mt-1">{hero.experience} / {hero.required_experience}</p>
                         </div>
                     ))}
+                </div>
+                <div>
+                    <p>Exp Gained per Hero: {endRewards?.xp_per_hero || 0}</p>
+                    <p>Gold Acquired: {endRewards?.total_gold || 0}</p>
                 </div>
                 <button className="btn btn-success text-2xl w-fit h-fit p-2" onClick={() => endBattle()}>
                     Return to Town

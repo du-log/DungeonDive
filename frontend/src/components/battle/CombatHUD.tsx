@@ -6,7 +6,7 @@ function CombatHUD( {activeAdventurer, onUseSkill, onAttack, party, targetId} ) 
             <div className="flex-grow grid grid-cols-2 gap-2 p-2">
                 {party.map(hero => (
                     <div key={hero.id} 
-                    className={`p-2 w-40 h-40 border rounded-lg 
+                    className={`p-2 w-40 h-30 border rounded-lg 
                     ${hero.id === activeAdventurer?.id ? 'ring-4 ring-blue-500' : ''}
                     ${targetId === hero.id ? 'ring-4 ring-red-500' : ''}
                     ${hero.is_dead ? 'grayscale' : ''}`}>

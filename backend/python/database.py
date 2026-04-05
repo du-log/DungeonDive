@@ -10,11 +10,36 @@ def init_db():
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
-            gold INTEGER DEFAULT 100
+            gold INTEGER DEFAULT 100,
+            current_view TEXT DEFAULT 'town'
         )
     ''')
 
-    # Create Adventurer Table (One-to-Many)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS classes (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            class_name TEXT NOT NULL,
+            tier INTEGER DEFAULT 1,
+            base_hp INTEGER,
+            base_str INTEGER,
+            base_dex INTEGER,
+            base_int INTEGER,
+            base_will INTEGER,
+            base_luck INTEGER,
+            base_speed INTEGER,
+            hp_growth INTEGER,
+            str_growth INTEGER,
+            dex_growth INTEGER,
+            int_growth INTEGER,
+            will_growth INTEGER,
+            luck_growth INTEGER,
+            speed_growth FLOAT,
+            recruitment_cost INTEGER DEFAULT 50,
+            parent_class_id INTEGER DEFAULT NULL
+        )
+    ''')
+
+    # Create Adventurer Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS adventurers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -22,8 +47,8 @@ def init_db():
             name TEXT NOT NULL,
             level INTEGER DEFAULT 1,
             experience INTEGER DEFAULT 0,
-            class TEXT NOT NULL,
-            tier INTEGER DEFAULT 1,
+            required_experience INTEGER DEFAULT 100,
+            class_id INTEGER NOT NULL,
             current_hp INTEGER DEFAULT 100,
             max_hp INTEGER DEFAULT 100,
             str INTEGER DEFAULT 10,
@@ -31,13 +56,14 @@ def init_db():
             int INTEGER DEFAULT 10,
             will INTEGER DEFAULT 10,
             luck INTEGER DEFAULT 10,
-            speed INTEGER DEFAULT 100,
+            speed FLOAT DEFAULT 100.0,
             stat_points INTEGER DEFAULT 0,
             skill_points INTEGER DEFAULT 0,
             in_party BOOLEAN DEFAULT FALSE,
             in_combat_party BOOLEAN DEFAULT FALSE,
             current_energy INTEGER DEFAULT 0,
-            FOREIGN KEY (user_id) REFERENCES users (id)
+            FOREIGN KEY (user_id) REFERENCES users (id),
+            FOREIGN KEY (class_id) REFERENCES classes (id)
         )
     ''')
 
@@ -54,7 +80,11 @@ def init_db():
             will INTEGER DEFAULT 10,
             luck INTEGER DEFAULT 10,
             speed INTEGER DEFAULT 100,
-            xp_reward INTEGER DEFAULT 50
+            xp_reward INTEGER DEFAULT 50,
+            gold_reward INTEGER DEFAULT 50,
+            rank INTEGER DEFAULT 1,
+            location_id INTEGER DEFAULT 1,
+            min_level INTEGER
         )
     ''')
 
@@ -68,7 +98,10 @@ def init_db():
             cooldown_turns INTEGER DEFAULT 3,
             energy_gain INTEGER DEFAULT 10,
             effect_type TEXT,
-            target_type TEXT CHECK(target_type IN ('single', 'all', 'self'))
+            target_type TEXT CHECK(target_type IN ('single', 'all', 'self')),
+            required_level INTEGER DEFAULT 1,
+            required_tier INTEGER DEFAULT 1,
+            class_id INTEGER DEFAULT 0
         )
     ''')
 
@@ -123,22 +156,77 @@ def init_db():
         )
     ''')
 
+    # Seeding functions
+    def seed_classes(cur):
+        # Tier 1 Bases
+        classes_t1 = [
+            ("Knight", 1, 120, 15, 8, 5, 12, 5, 90.0, 15, 3, 1, 1, 2, 1, 0.5, 50, None),
+            ("Mage", 1, 80, 5, 10, 18, 15, 8, 105.0, 8, 1, 2, 4, 3, 2, 1.2, 75, None),
+            ("Rogue", 1, 100, 10, 15, 8, 8, 15, 120.0, 10, 2, 3, 2, 1, 4, 2.5, 60, None)
+        ]
+        
+        for c in classes_t1:
+            cur.execute('''INSERT INTO classes (class_name, tier, base_hp, base_str, base_dex, 
+                        base_int, base_will, base_luck, base_speed, hp_growth, str_growth, 
+                        dex_growth, int_growth, will_growth, luck_growth, speed_growth, 
+                        recruitment_cost, parent_class_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', c)
+        
+        # Tier 2 Promotions (Assuming Knight is ID 1, Mage is ID 2, Rogue is ID 3)
+        classes_t2 = [
+            ("Paladin", 2, 200, 22, 10, 12, 20, 10, 95.0, 25, 4, 1, 2, 3, 2, 0.7, 500, 1),
+            ("Archmage", 2, 140, 8, 12, 35, 25, 12, 110.0, 12, 1, 2, 6, 5, 3, 1.5, 750, 2),
+            ("Assassin", 2, 160, 18, 25, 10, 12, 25, 140.0, 15, 3, 5, 2, 2, 5, 3.5, 600, 3)
+        ]
+        
+        for c in classes_t2:
+            cur.execute('''INSERT INTO classes (class_name, tier, base_hp, base_str, base_dex, 
+                        base_int, base_will, base_luck, base_speed, hp_growth, str_growth, 
+                        dex_growth, int_growth, will_growth, luck_growth, speed_growth, 
+                        recruitment_cost, parent_class_id) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', c)
+    
+    def seed_enemies(cur):
+        # (Name, Level, HP, STR, DEX, INT, WILL, LUCK, SPD, XP, Gold, Rank, Location, Min_Lvl)
+        enemies = [
+            # Grasslands (Loc 1)
+            ("Slime", 1, 30, 5, 5, 2, 2, 10, 80, 25, 10, 1, 1, 1),
+            ("Wolf", 3, 70, 12, 14, 2, 4, 5, 115, 55, 30, 1, 1, 2),
+            ("Bandit Leader", 5, 250, 20, 15, 8, 10, 12, 100, 200, 500, 3, 1, 4), # Rank 3 (Boss)
+            
+            # Cave (Loc 2)
+            ("Cave Bat", 2, 40, 8, 18, 4, 4, 8, 130, 40, 15, 1, 2, 2),
+            ("Goblin Warrior", 4, 100, 15, 12, 5, 8, 6, 105, 80, 45, 1, 2, 3),
+            ("Stone Golem", 8, 600, 35, 5, 2, 20, 2, 60, 450, 250, 2, 2, 6) # Rank 2 (Elite)
+        ]
+        cur.executemany('''INSERT INTO enemies (name, level, max_hp, str, dex, int, will, luck, speed, 
+                        xp_reward, gold_reward, rank, location_id, min_level) 
+                        VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)''', enemies)
+    
+    def seed_skills(cur):
+    # (Name, Desc, Mult, CD, Energy, Effect, Target, Req_Lvl, Req_Tier, Class_id)
+        skills = [
+            ("Shield Bash", "Physical strike + high threat", 1.3, 3, 15, "damage", "single", 1, 1, 1),
+            ("Magic Missile", "Guaranteed arcane hit", 1.5, 2, 20, "damage", "single", 1, 1, 2),
+            ("Quick Slash", "Two fast hits", 0.8, 1, 10, "damage", "single", 1, 1, 3),
+            # Tier 2 Skills
+            ("Holy Wrath", "Massive AOE damage", 2.5, 6, 50, "damage", "all", 10, 2, 4) # Paladin
+        ]
+        cur.executemany('''INSERT INTO skills (name, description, base_multiplier, cooldown_turns, 
+                        energy_gain, effect_type, target_type, required_level, required_tier, 
+                        class_id) VALUES (?,?,?,?,?,?,?,?,?,?)''', skills)
+
     # Seed initial data
     cur.execute('SELECT count(*) FROM users')
     if cur.fetchone()[0] == 0:
         cur.execute('INSERT INTO users (username, gold) VALUES (?, ?)', ("Player", 500))
         user_id = cur.lastrowid
-        #cur.execute('INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)', (user_id, "John", "Warrior"))
-        #cur.execute('INSERT INTO adventurers (user_id, name, class) VALUES (?, ?, ?)', (user_id, "Mary", "Mage"))
-        cur.execute('INSERT INTO enemies (name, max_hp, str) VALUES (?, ?, ?)', ("Goblin", 50, 8))
-        cur.execute('INSERT INTO enemies (name, max_hp, str) VALUES (?, ?, ?)', ("Orc", 100, 12))
-        cur.execute('INSERT INTO enemies (name, max_hp, str) VALUES (?, ?, ?)', ("Troll", 150, 15))
-        cur.execute('INSERT INTO skills (name, description, base_multiplier, cooldown_turns, energy_gain, effect_type, target_type) VALUES (?, ?, ?, ?, ?, ?, ?)', 
-                    ("Power Strike", "A strong attack that deals extra damage.", 1.5, 3, 20, "damage", "single"))
+        seed_classes(cur)
+        seed_enemies(cur)
+        seed_skills(cur)
+        print("World Data Seeded: Classes (T1/T2), Enemies (Common/Boss), and Basic Skills.")
     
     con.commit()
     con.close()
-    print("DB initialized and seeded")
+    print("Database initialization and seeding completed.")
 
 if __name__ == "__main__":
     init_db()

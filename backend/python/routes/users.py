@@ -26,6 +26,7 @@ def get_info():
         user_info = {
             "username": user_row['username'],
             "gold": user_row['gold'],
+            "current_view": user_row['current_view']
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
@@ -33,6 +34,19 @@ def get_info():
         con.close()
     
     return user_info
+
+@router.post("/view/{this_view}")
+def set_user_view(this_view):
+    con = get_db_con()
+    cur = con.cursor()
+    try:
+        cur.execute('UPDATE users SET current_view = ? WHERE id = 1', (this_view,))
+        con.commit()
+        print(this_view)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
 
 @router.post("/add-gold")
 def add_gold():
