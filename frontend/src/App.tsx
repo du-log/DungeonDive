@@ -164,8 +164,6 @@ function App() {
     const aliveEnemies = combatants.filter(c => c.unit_type === 'enemy' && c.current_hp > 0)
     const aliveHeroes = combatants.filter(c => c.unit_type === 'adventurer' && c.current_hp > 0)
 
-
-
     if(aliveEnemies.length === 0) {
       setResultOfBattle('Victory!')
       setBattleOver(true)
@@ -174,6 +172,7 @@ function App() {
       })
       const data = await res.json()
       setEndRewards(data)
+
       setTimeout(() => {
         setView('results')
         viewInDb('results')
@@ -181,6 +180,7 @@ function App() {
     } else if (aliveHeroes.length === 0) {
       setResultOfBattle('Defeat...')
       setBattleOver(true)
+      
       setTimeout(() => {
         setView('results')
         viewInDb('results')

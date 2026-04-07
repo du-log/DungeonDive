@@ -162,11 +162,11 @@ def init_db():
     cur.execute('''
         CREATE TABLE IF NOT EXISTS encounters (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        name NOT NULL,
+        name TEXT NOT NULL,
         location_id INTEGER,
         total_waves INTEGER DEFAULT 1,
         min_level INTEGER DEFAULT 1,
-        reward_multiplier FLOAT DEFAULT 1.0,
+        reward_multiplier FLOAT DEFAULT 1.0
         )
     ''')
 

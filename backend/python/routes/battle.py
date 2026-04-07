@@ -18,7 +18,7 @@ def linear_enemy_scaling(base_enemy, target_level):
     lvl_multiplier = 1 + ((target_level - 1) * 0.9)
     if base_enemy['rank'] == 2: #elite
         rank_multiplier = 1.5
-    elif base_enemy['rank'] = 3: #boss
+    elif base_enemy['rank'] == 3: #boss
         rank_multiplier = 2.0
     elif base_enemy['rank'] >= 4: #raid
         rank_multiplier = 4.0
@@ -75,7 +75,7 @@ async def battle_start(encounter_id: int):
         """, (encounter_id,))
 
         cur.execute('DELETE FROM combatants')
-        squad = cur.execute('SELECT * FROM adventurers WHERE in_combat_paarty = 1').fetchall()
+        squad = cur.execute('SELECT * FROM adventurers WHERE in_combat_party = 1').fetchall()
         for i, hero in enumerate(squad):
             initial_cr = random.uniform(0, 5.0)
             con.execute("""
@@ -95,7 +95,7 @@ async def battle_start(encounter_id: int):
                 t_pos += 1
             
         con.commit()
-        log_battle_event(1, "Starting battle...")
+        log_battle_event(encounter_id, "Starting battle...")
 
         return {"status": "battle_started", "current_wave": 1}
     except Exception as e:
@@ -124,6 +124,10 @@ def next_wave():
                 }
         cur.execute("DELETE FROM combatants WHERE unit_type = 'enemy'")
 
+        cur.execute("UPDATE combatants SET readiness = 0 WHERE unit_type = 'adventurer'")
+
+        encounter = cur.execute("SELECT * FROM encounters WHERE id = ?", (user['encounter_id'],)).fetchall()
+
         wave_data = cur.execute("""
             SELECT * FROM encounter_waves
             WHERE encounter_id = ? AND wave_number = ?
@@ -132,7 +136,7 @@ def next_wave():
         t_pos = 0
         for entry in wave_data:
             for _ in range(entry['enemy_count']):
-                spawn_enemy(1, entry['enemy_template_id'],encounter['min_level'],t_pos)
+                spawn_enemy(1, entry['enemy_template_id'], encounter['min_level'],t_pos)
                 t_pos += 1
         
         con.commit()
@@ -447,6 +451,12 @@ async def process_rewards():
             JOIN enemies e ON c.unit_id = e.id
             WHERE c.unit_type = 'enemy' AND c.is_dead = 1
         """
+        user = cur.execute("SELECT encounter_id, current_wave FROM users WHERE id = 1").fetchall()
+        this_encounter = cur.execute("SELECT total_waves FROM encounters WHERE id = ?", (user['encounter_id'],)).fetchall()
+
+        if user['current_wave'] != this_encounter['total_waves']:
+            return {"message": "Battle still in progress."}
+
         rewards = cur.execute(query).fetchone()
         total_xp = rewards['total_xp'] or 0
         total_gold = rewards['total_gold'] or 0
@@ -468,6 +478,7 @@ async def process_rewards():
         con.commit()
 
         return {
+            "total_xp": total_xp,
             "xp_per_hero": per_hero_xp,
             "total_gold": total_gold,
             "party_reports": party_reports

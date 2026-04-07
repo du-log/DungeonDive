@@ -1,6 +1,7 @@
-function CombatSetupCard( {data, toggleCombatMember, isSelected} ) {
+function CombatSetupCard( {data, toggleCombatMember, isSelected, squadCount} ) {
     return (
-        <div onClick={() => toggleCombatMember(data.id)} className={`w-40 h-50 shadow-md cursor-pointer hover:border-primary border bg-gray-300
+        <div onClick={() => toggleCombatMember(data.id)}
+        className={`w-40 h-50 shadow-md cursor-pointer hover:border-primary border bg-base-300 rounded-2xl border-white
         ${isSelected ? 'border-success' : 'border-transparent'}`}>
             <div className="flex flex-col p-2 items-center">
                 <h3 className="font-bold text-sm">{data.name}</h3>
