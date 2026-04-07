@@ -2,6 +2,7 @@ from fastapi import APIRouter, HTTPException
 import sqlite3
 import os
 import random
+import math
 
 router = APIRouter(prefix='/battle', tags=['battle'])
 
@@ -13,10 +14,142 @@ def get_db_con():
     con.row_factory = sqlite3.Row
     return con
 
+def linear_enemy_scaling(base_enemy, target_level):
+    lvl_multiplier = 1 + ((target_level - 1) * 0.9)
+    if base_enemy['rank'] == 2: #elite
+        rank_multiplier = 1.5
+    elif base_enemy['rank'] = 3: #boss
+        rank_multiplier = 2.0
+    elif base_enemy['rank'] >= 4: #raid
+        rank_multiplier = 4.0
+    else:
+        rank_multiplier = 1.0 #common
+    
+    total_multi = lvl_multiplier * rank_multiplier
 
-@router.post('/start')
-async def battle_start():
+    return {
+        "name": f"Lvl {target_level} {base_enemy['name']}",
+        "level": target_level,
+        "max_hp": math.floor(base_enemy['max_hp']*total_multi),
+        "str": math.floor(base_enemy['str']*total_multi),
+        "dex": math.floor(base_enemy['dex']*total_multi),
+        "int": math.floor(base_enemy['int']*total_multi),
+        "will": math.floor(base_enemy['will']*total_multi),
+        "luck": math.floor(base_enemy['luck']*total_multi),
+        "speed": base_enemy['speed'] + ((target_level - 1) * 0.5),
+        "xp_reward": math.floor(base_enemy['xp_reward']*total_multi),
+        "gold_reward": math.floor(base_enemy['gold_reward']*total_multi)
+    }
+
+def spawn_enemy(battle_id, enemy_template_id, target_level, position):
     con = get_db_con()
+    try:
+        base_enemy = con.execute("SELECT * FROM enemies WHERE id = ?", (enemy_template_id,)).fetchone()
+        scaled_enemy = linear_enemy_scaling(base_enemy, target_level)
+
+        con.execute("""
+            INSERT INTO combatants 
+            (battle_id, unit_type, unit_id, current_hp, max_hp, current_energy, readiness, position, is_dead)
+            VALUES (?, 'enemy', ?, ?, ?, 0, 0, ?, 0)
+        """, (battle_id, enemy_template_id, scaled_enemy['max_hp'], scaled_enemy['max_hp'], position))
+    
+        con.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+@router.post('/start/{encounter_id}')
+async def battle_start(encounter_id: int):
+    con = get_db_con()
+    cur = con.cursor()
+
+    try:
+        encounter = cur.execute("SELECT * FROM encounters WHERE id = ?", (encounter_id,)).fetchall()
+        if not encounter:
+            raise HTTPException(status_code=500, detail="Encounter not found.")
+        
+        cur.execute("""
+            UPDATE users SET current_view = 'battle', encounter_id = ?, current_wave = 1
+            WHERE id = 1
+        """, (encounter_id,))
+
+        cur.execute('DELETE FROM combatants')
+        squad = cur.execute('SELECT * FROM adventurers WHERE in_combat_paarty = 1').fetchall()
+        for i, hero in enumerate(squad):
+            initial_cr = random.uniform(0, 5.0)
+            con.execute("""
+                INSERT INTO combatants (unit_type, unit_id, current_hp, max_hp, readiness, position)
+                VALUES (?, ?, ?, ?, ?, ?)
+            """, ('adventurer', hero['id'], hero['current_hp'], hero['max_hp'], initial_cr, i))
+
+        wave_data = cur.execute("""
+            SELECT * FROM encounter_waves
+            WHERE encounter_id = ? AND wave_number = 1
+        """, (encounter_id,)).fetchall()
+
+        t_pos = 0
+        for entry in wave_data:
+            for _ in range(entry['enemy_count']):
+                spawn_enemy(1, entry['enemy_template_id'], encounter['min_level'], t_pos)
+                t_pos += 1
+            
+        con.commit()
+        log_battle_event(1, "Starting battle...")
+
+        return {"status": "battle_started", "current_wave": 1}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+@router.post('/next-wave')
+def next_wave():
+    con = get_db_con()
+    cur = con.cursor()
+
+    try:
+        user = cur.execute('SELECT encounter_id, current_wave FROM users WHERE id = 1').fetchone()
+        if not user:
+            raise HTTPException(status_code=500, detail="Unable to get encounter id and current wave")
+        next_wave_num = user['current_wave'] + 1
+        next_wave_exists = cur.execute("""
+            SELECT 1 FROM encounter_waves
+            WHERE encounter_id = ? AND wave_number = ?
+        """, (user['encounter_id'], next_wave_num,)).fetchone()
+        if not next_wave_exists:
+            return {
+                "status": "complete",
+                "message": "All Waves Cleared"
+                }
+        cur.execute("DELETE FROM combatants WHERE unit_type = 'enemy'")
+
+        wave_data = cur.execute("""
+            SELECT * FROM encounter_waves
+            WHERE encounter_id = ? AND wave_number = ?
+        """, (user['encounter_id'], next_wave_num)).fetchall()
+
+        t_pos = 0
+        for entry in wave_data:
+            for _ in range(entry['enemy_count']):
+                spawn_enemy(1, entry['enemy_template_id'],encounter['min_level'],t_pos)
+                t_pos += 1
+        
+        con.commit()
+
+        return {
+            "status": "next_wave",
+            "wave": next_wave_num
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+@router.post('/start/random')
+async def random_battle_start():
+    con = get_db_con()
+    cur = con.cursor()
 
     con.execute('DELETE FROM combatants')
     squad = con.execute('SELECT * FROM adventurers WHERE in_combat_party = 1').fetchall()
@@ -242,6 +375,7 @@ def calculate_level_up(adventurer_id, gained_xp):
         
         new_xp = adv['experience'] + gained_xp
         new_level = adv['level']
+        prev_level = adv['level']
         req_xp = adv['required_experience']
         
         # Trackers for the "Results" screen
@@ -292,6 +426,7 @@ def calculate_level_up(adventurer_id, gained_xp):
         
         return {
             "levels_gained": levels_gained,
+            "prev_level": prev_level,
             "new_level": new_level,
             "stats_gained": stats_gained
         }

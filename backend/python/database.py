@@ -11,7 +11,9 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             username TEXT NOT NULL,
             gold INTEGER DEFAULT 100,
-            current_view TEXT DEFAULT 'town'
+            current_view TEXT DEFAULT 'town',
+            encounter_id INTEGER,
+            current_wave INTEGER
         )
     ''')
 
@@ -156,6 +158,31 @@ def init_db():
         )
     ''')
 
+    #Encounters Table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS encounters (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        name NOT NULL,
+        location_id INTEGER,
+        total_waves INTEGER DEFAULT 1,
+        min_level INTEGER DEFAULT 1,
+        reward_multiplier FLOAT DEFAULT 1.0,
+        )
+    ''')
+
+    #Encounter Waves (Bridging)
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS encounter_waves (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        encounter_id INTEGER,
+        wave_number INTEGER,
+        enemy_template_id INTEGER,
+        enemy_count INTEGER,
+        FOREIGN KEY (encounter_id) REFERENCES encounters(id),
+        FOREIGN KEY (enemy_template_id) REFERENCES enemies(id)
+        )
+    ''')
+
     # Seeding functions
     def seed_classes(cur):
         # Tier 1 Bases
@@ -188,14 +215,14 @@ def init_db():
         # (Name, Level, HP, STR, DEX, INT, WILL, LUCK, SPD, XP, Gold, Rank, Location, Min_Lvl)
         enemies = [
             # Grasslands (Loc 1)
-            ("Slime", 1, 30, 5, 5, 2, 2, 10, 80, 25, 10, 1, 1, 1),
-            ("Wolf", 3, 70, 12, 14, 2, 4, 5, 115, 55, 30, 1, 1, 2),
-            ("Bandit Leader", 5, 250, 20, 15, 8, 10, 12, 100, 200, 500, 3, 1, 4), # Rank 3 (Boss)
+            ("Slime", 1, 30, 5, 5, 2, 2, 10, 90, 25, 10, 1, 1, 1),
+            ("Wolf", 1, 50, 9, 12, 2, 4, 5, 115, 55, 30, 1, 1, 2),
+            ("Bandit Leader", 1, 150, 20, 15, 8, 10, 12, 100, 250, 500, 3, 1, 4), # Rank 3 (Boss)
             
             # Cave (Loc 2)
-            ("Cave Bat", 2, 40, 8, 18, 4, 4, 8, 130, 40, 15, 1, 2, 2),
-            ("Goblin Warrior", 4, 100, 15, 12, 5, 8, 6, 105, 80, 45, 1, 2, 3),
-            ("Stone Golem", 8, 600, 35, 5, 2, 20, 2, 60, 450, 250, 2, 2, 6) # Rank 2 (Elite)
+            ("Cave Bat", 1, 25, 8, 18, 4, 4, 8, 130, 40, 15, 1, 2, 2),
+            ("Goblin Warrior", 1, 100, 10, 12, 5, 8, 6, 105, 80, 45, 1, 2, 3),
+            ("Stone Golem", 1, 200, 25, 5, 2, 20, 2, 60, 150, 250, 2, 2, 6) # Rank 2 (Elite)
         ]
         cur.executemany('''INSERT INTO enemies (name, level, max_hp, str, dex, int, will, luck, speed, 
                         xp_reward, gold_reward, rank, location_id, min_level) 
