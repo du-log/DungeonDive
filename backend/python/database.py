@@ -225,7 +225,10 @@ def init_db():
             # Cave (Loc 2)
             ("Cave Bat", 1, 25, 8, 18, 4, 4, 8, 130, 40, 15, 1, 2, 2),
             ("Goblin Warrior", 1, 100, 10, 12, 5, 8, 6, 105, 80, 45, 1, 2, 3),
-            ("Stone Golem", 1, 200, 25, 5, 2, 20, 2, 60, 150, 250, 2, 2, 6) # Rank 2 (Elite)
+            ("Stone Golem", 1, 200, 25, 5, 2, 20, 2, 60, 150, 250, 2, 2, 6), # Rank 2 (Elite)
+
+            # Special
+            ("Leprechaun", 1, 1, 1, 1, 1, 1, 1, 400, 7777, 7777, 4, 1, 1)
         ]
         cur.executemany('''INSERT INTO enemies (name, level, max_hp, str, dex, int, will, luck, speed, 
                         xp_reward, gold_reward, rank, location_id, min_level) 
@@ -248,7 +251,7 @@ def init_db():
         # 1. The Encounter (Mission Header)
         # Name, Location_id (1=Grasslands), Total_waves, Min_level, Reward_mult
         encounters = [
-            ("Grassland Patrol", 1, 2, 1, 1.0),
+            ("Grassland Patrol", 1, 3, 1, 1.0),
             ("The Bandit Fortress", 1, 3, 5, 1.5)
         ]
         cur.executemany('''INSERT INTO encounters (name, location_id, total_waves, 
@@ -260,6 +263,7 @@ def init_db():
             # Mission 1 (ID 1): 2 Waves
             (1, 1, 1, 2), # Wave 1: 2 Slimes
             (1, 2, 2, 1), # Wave 2: 1 Wolf
+            (1, 3, 7, 3), # Wave 3: 3 Leprechauns
             
             # Mission 2 (ID 2): 3 Waves
             (2, 1, 2, 2), # Wave 1: 2 Wolves

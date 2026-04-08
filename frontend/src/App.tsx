@@ -170,6 +170,9 @@ function App() {
       if(battleData.is_final_wave) {
         setResultOfBattle('Victory!')
         setBattleOver(true)
+        const f_rew = await fetch('http://127.0.0.1:8000/battle/next-wave', {
+          method: 'POST'
+        })
         const res = await fetch('http://127.0.0.1:8000/battle/process-rewards', {
           method: 'POST'
         })

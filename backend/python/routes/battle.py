@@ -144,6 +144,19 @@ def next_wave():
             raise HTTPException(status_code=500, detail="Unable to get encounter id and current wave")
         print("fetched user values")
 
+        rewards = cur.execute("""
+            SELECT SUM(e.xp_reward) as xp, SUM(e.gold_reward) as gold
+            FROM combatants c
+            LEFT JOIN enemies e ON c.unit_id = e.id
+            WHERE c.unit_type = 'enemy' and c.is_dead = 1
+        """).fetchone()
+
+        cur.execute("""
+            UPDATE users SET pending_xp = pending_xp + ?, pending_gold = pending_gold + ?
+            WHERE id = 1
+        """, (rewards['xp'] or 0, rewards['gold'] or 0,))
+        print(f"wave xp: {rewards['xp']}, wave gold: {rewards['gold']}")
+
         next_wave_num = user['current_wave'] + 1
         print(f"next wave number: {next_wave_num}")
 
@@ -157,19 +170,6 @@ def next_wave():
                 "message": "All Waves Cleared"
                 }
         print(f"next wave does exist in encounter {user['encounter_id']}")
-
-        rewards = cur.execute("""
-            SELECT SUM(e.xp_reward) as xp, SUM(e.gold_reward) as gold
-            FROM combatants c
-            LEFT JOIN enemies e ON c.unit_id = e.id
-            WHERE c.unit_type = 'enemy' and c.is_dead = 1
-        """).fetchone()
-
-        cur.execute("""
-            UPDATE users SET pending_xp = pending_xp + ?, pending_gold = pending_gold + ?
-            WHERE id = 1
-        """, (rewards['xp'] or 0, rewards['gold'] or 0,))
-        print(f"wave xp: {rewards['xp']}, wave gold: {rewards['gold']}")
 
         cur.execute("DELETE FROM combatants WHERE unit_type = 'enemy'")
         print("wiped old enemies")
@@ -517,21 +517,28 @@ async def process_rewards():
             FROM users
             WHERE id = 1
         """
-        user = cur.execute("SELECT encounter_id, current_wave FROM users WHERE id = 1").fetchall()
-        this_encounter = cur.execute("SELECT total_waves FROM encounters WHERE id = ?", (user['encounter_id'],)).fetchall()
+        user = cur.execute("SELECT encounter_id, current_wave FROM users WHERE id = 1").fetchone()
+        this_encounter = cur.execute("SELECT total_waves FROM encounters WHERE id = ?", (user['encounter_id'],)).fetchone()
 
         if user['current_wave'] != this_encounter['total_waves']:
             return {"message": "Battle still in progress."}
 
+        f_rewards = cur.execute("""
+            SELECT SUM(e.xp_reward) as xp, SUM(e.gold_reward) as gold
+            FROM combatants c
+            LEFT JOIN enemies e ON c.unit_id = e.id
+            WHERE c.unit_type = 'enemy' and c.is_dead = 1
+        """).fetchone()
+
         rewards = cur.execute(query).fetchone()
         print("rewards fetched")
-        total_xp = rewards['pending_xp'] or 0
-        total_gold = rewards['pending_gold'] or 0
+        total_xp = (rewards['pending_xp'] or 0) + (f_rewards['xp'] or 0)
+        total_gold = (rewards['pending_gold'] or 0) + (f_rewards['gold'] or 0)
         print(f"total xp: {total_xp}, total gold: {total_gold}")
 
         heroes = cur.execute("SELECT unit_id FROM combatants WHERE unit_type = 'adventurer'").fetchall()
         print(f"fetched all {len(heroes)} adventurers")
-        divisor = len(heroes)
+        divisor = len(heroes) if len(heroes) > 0 else 1
         per_hero_xp = total_xp / divisor
 
         party_reports = []
