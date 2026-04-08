@@ -59,6 +59,25 @@ def spawn_enemy(battle_id, enemy_template_id, target_level, position):
     finally:
         con.close()
 
+def _initialize_wave(encounter_id, wave_number, min_level):
+    con = get_db_con()
+    try:
+        con.execute("DELETE FROM combatants WHERE unit_type = 'enemy'")
+
+        wave_data = con.execute("SELECT * FROM encounter_waves WHERE encounter_id = ? AND wave_number = ?", (encounter_id, wave_number,)).fetchall()
+
+        t_pos = 0
+        for entry in wave_data:
+            for _ in range(entry['enemy_count']):
+                spawn_enemy(1, entry['enemy_template_id'], min_level, t_pos)
+                t_pos += 1
+        
+        con.commit()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
 @router.post('/start/{encounter_id}')
 async def battle_start(encounter_id: int):
     con = get_db_con()
@@ -83,16 +102,7 @@ async def battle_start(encounter_id: int):
                 VALUES (?, ?, ?, ?, ?, ?)
             """, ('adventurer', hero['id'], hero['current_hp'], hero['max_hp'], initial_cr, i))
 
-        wave_data = cur.execute("""
-            SELECT * FROM encounter_waves
-            WHERE encounter_id = ? AND wave_number = 1
-        """, (encounter_id,)).fetchall()
-
-        t_pos = 0
-        for entry in wave_data:
-            for _ in range(entry['enemy_count']):
-                spawn_enemy(1, entry['enemy_template_id'], encounter['min_level'], t_pos)
-                t_pos += 1
+        _initialize_wave(encounter_id, 1, encounter['min_level'])
             
         con.commit()
         log_battle_event(encounter_id, "Starting battle...")
@@ -128,16 +138,7 @@ def next_wave():
 
         encounter = cur.execute("SELECT * FROM encounters WHERE id = ?", (user['encounter_id'],)).fetchall()
 
-        wave_data = cur.execute("""
-            SELECT * FROM encounter_waves
-            WHERE encounter_id = ? AND wave_number = ?
-        """, (user['encounter_id'], next_wave_num)).fetchall()
-
-        t_pos = 0
-        for entry in wave_data:
-            for _ in range(entry['enemy_count']):
-                spawn_enemy(1, entry['enemy_template_id'], encounter['min_level'],t_pos)
-                t_pos += 1
+        _initialize_wave(user['encounter_id'], next_wave_num, encounter['min_level'])
         
         con.commit()
 
