@@ -14,7 +14,9 @@ def init_db():
             current_view TEXT DEFAULT 'town',
             encounter_id INTEGER,
             current_wave INTEGER,
-            battle_id INTEGER
+            battle_id INTEGER,
+            pending_xp INTEGER DEFAULT 0,
+            pending_gold INTEGER DEFAULT 0
         )
     ''')
 

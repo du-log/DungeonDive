@@ -186,6 +186,7 @@ function App() {
         })
         if (nextWave.ok) {
           console.log("Successfully transitioned to next wave in encounter ID " + battleData.encounter_id + ".")
+          fetchLogs()
         }
       }
     } else if (aliveHeroes.length === 0) {
