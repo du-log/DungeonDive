@@ -13,7 +13,8 @@ def init_db():
             gold INTEGER DEFAULT 100,
             current_view TEXT DEFAULT 'town',
             encounter_id INTEGER,
-            current_wave INTEGER
+            current_wave INTEGER,
+            battle_id INTEGER
         )
     ''')
 

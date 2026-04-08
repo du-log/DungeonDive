@@ -64,12 +64,14 @@ def _initialize_wave(encounter_id, wave_number, min_level):
     try:
         con.execute("DELETE FROM combatants WHERE unit_type = 'enemy'")
 
+        battle_id = con.execute("SELECT battle_id FROM users WHERE id = 1").fetchone()
+
         wave_data = con.execute("SELECT * FROM encounter_waves WHERE encounter_id = ? AND wave_number = ?", (encounter_id, wave_number,)).fetchall()
 
         t_pos = 0
         for entry in wave_data:
             for _ in range(entry['enemy_count']):
-                spawn_enemy(1, entry['enemy_template_id'], min_level, t_pos)
+                spawn_enemy(battle_id, entry['enemy_template_id'], min_level, t_pos)
                 t_pos += 1
         
         con.commit()
@@ -84,14 +86,15 @@ async def battle_start(encounter_id: int):
     cur = con.cursor()
 
     try:
+        new_battle_id = random.randint(1, 999999)
         encounter = cur.execute("SELECT * FROM encounters WHERE id = ?", (encounter_id,)).fetchall()
         if not encounter:
             raise HTTPException(status_code=500, detail="Encounter not found.")
         
         cur.execute("""
-            UPDATE users SET current_view = 'battle', encounter_id = ?, current_wave = 1
+            UPDATE users SET current_view = 'battle', encounter_id = ?, current_wave = 1, battle_id = ?
             WHERE id = 1
-        """, (encounter_id,))
+        """, (encounter_id, new_battle_id,))
 
         cur.execute('DELETE FROM combatants')
         squad = cur.execute('SELECT * FROM adventurers WHERE in_combat_party = 1').fetchall()
@@ -105,7 +108,7 @@ async def battle_start(encounter_id: int):
         _initialize_wave(encounter_id, 1, encounter['min_level'])
             
         con.commit()
-        log_battle_event(encounter_id, "Starting battle...")
+        log_battle_event(new_battle_id, "Starting battle...")
 
         return {"status": "battle_started", "current_wave": 1}
     except Exception as e:
@@ -119,7 +122,7 @@ def next_wave():
     cur = con.cursor()
 
     try:
-        user = cur.execute('SELECT encounter_id, current_wave FROM users WHERE id = 1').fetchone()
+        user = cur.execute('SELECT encounter_id, current_wave, battle_id FROM users WHERE id = 1').fetchone()
         if not user:
             raise HTTPException(status_code=500, detail="Unable to get encounter id and current wave")
         next_wave_num = user['current_wave'] + 1
@@ -141,6 +144,8 @@ def next_wave():
         _initialize_wave(user['encounter_id'], next_wave_num, encounter['min_level'])
         
         con.commit()
+
+        log_battle_event(user['battle_id'], f"Wave {next_wave_num} starting...")
 
         return {
             "status": "next_wave",
@@ -198,6 +203,7 @@ def get_combatants():
         FROM combatants c
         LEFT JOIN adventurers a ON c.unit_id = a.id AND c.unit_type = 'adventurer'
         LEFT JOIN enemies e ON c.unit_id = e.id AND c.unit_type = 'enemy'
+        WHERE c.battle_id = (SELECT battle_id FROM users WHERE id = 1)
     """
 
     try:
@@ -223,7 +229,7 @@ def battle_turn_tick():
             FROM combatants c
             LEFT JOIN adventurers a ON c.unit_id = a.id AND c.unit_type = 'adventurer'
             LEFT JOIN enemies e ON c.unit_id = e.id AND c.unit_type = 'enemy'
-            WHERE c.is_dead = 0
+            WHERE c.is_dead = 0 AND c.battle_id = (SELECT battle_id FROM users WHERE id = 1)
         """
 
         combatants = cur.execute(query).fetchall()
@@ -356,6 +362,23 @@ def battle_attack(attacker_id: int, target_id: int):
     finally:
         con.close()
 
+@router.get('/status')
+def battle_status():
+    con = get_db_con()
+    encounter = con.execute("SELECT encounter_id, current_wave FROM users WHERE id = 1").fetchone()
+    total_waves = con.execute("SELECT total_waves FROM encounters WHERE id = ?", (encounter['encounter_id'])).fetchone()
+    if encounter['current_wave'] == total_waves:
+        is_final_wave = True
+    else:
+        is_final_wave = False
+    
+    return {
+        "encounter_id": encounter['encounter_id'],
+        "current_wave": encounter['current_wave'],
+        "total_waves": total_waves,
+        "is_final_wave": is_final_wave
+    }
+
 def calculate_level_up(adventurer_id, gained_xp):
     con = get_db_con()
     cur = con.cursor()
@@ -474,7 +497,7 @@ async def process_rewards():
                 "report": report
             })
 
-        cur.execute("UPDATE users SET gold = gold + ? WHERE ID = 1", (total_gold,))
+        cur.execute("UPDATE users SET gold = gold + ? WHERE id = 1", (total_gold,))
 
         con.commit()
 
@@ -499,6 +522,9 @@ async def battle_end():
         con.commit()
 
         con.execute('DELETE FROM battle_logs')
+        con.commit()
+
+        con.execute("UPDATE users SET battle_id = 0 WHERE id = 1")
         con.commit()
 
         return { "status": "cleared" }

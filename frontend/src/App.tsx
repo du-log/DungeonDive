@@ -165,22 +165,33 @@ function App() {
     const aliveHeroes = combatants.filter(c => c.unit_type === 'adventurer' && c.current_hp > 0)
 
     if(aliveEnemies.length === 0) {
-      setResultOfBattle('Victory!')
-      setBattleOver(true)
-      const res = await fetch('http://127.0.0.1:8000/battle/process-rewards', {
-        method: 'POST'
-      })
-      const data = await res.json()
-      setEndRewards(data)
+      const battleRes = await fetch('http://127.0.0.1:8000/battle/status')
+      const battleData = await battleRes.json()
+      if(battleData.is_final_wave) {
+        setResultOfBattle('Victory!')
+        setBattleOver(true)
+        const res = await fetch('http://127.0.0.1:8000/battle/process-rewards', {
+          method: 'POST'
+        })
+        const data = await res.json()
+        setEndRewards(data)
 
-      setTimeout(() => {
-        setView('results')
-        viewInDb('results')
-      }, 1500)
+        setTimeout(() => {
+          setView('results')
+          viewInDb('results')
+        }, 1500)
+      } else {
+        const nextWave = await fetch('http://127.0.0.1:8000/battle/next-wave', {
+          method: 'POST'
+        })
+        if (nextWave.ok) {
+          console.log("Successfully transitioned to next wave in encounter ID " + battleData.encounter_id + ".")
+        }
+      }
     } else if (aliveHeroes.length === 0) {
       setResultOfBattle('Defeat...')
       setBattleOver(true)
-      
+
       setTimeout(() => {
         setView('results')
         viewInDb('results')
