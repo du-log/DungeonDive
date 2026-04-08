@@ -242,6 +242,31 @@ def init_db():
                         energy_gain, effect_type, target_type, required_level, required_tier, 
                         class_id) VALUES (?,?,?,?,?,?,?,?,?,?)''', skills)
 
+    def seed_encounters(cur):
+        # 1. The Encounter (Mission Header)
+        # Name, Location_id (1=Grasslands), Total_waves, Min_level, Reward_mult
+        encounters = [
+            ("Grassland Patrol", 1, 2, 1, 1.0),
+            ("The Bandit Fortress", 1, 3, 5, 1.5)
+        ]
+        cur.executemany('''INSERT INTO encounters (name, location_id, total_waves, 
+                        min_level, reward_multiplier) VALUES (?,?,?,?,?)''', encounters)
+        
+        # 2. The Waves (The actual enemies)
+        # encounter_id, wave_number, enemy_template_id, enemy_count
+        waves = [
+            # Mission 1 (ID 1): 2 Waves
+            (1, 1, 1, 2), # Wave 1: 2 Slimes
+            (1, 2, 2, 1), # Wave 2: 1 Wolf
+            
+            # Mission 2 (ID 2): 3 Waves
+            (2, 1, 2, 2), # Wave 1: 2 Wolves
+            (2, 2, 2, 3), # Wave 2: 3 Wolves (Aggressive!)
+            (2, 3, 3, 1)  # Wave 3: 1 Bandit Leader (Boss)
+        ]
+        cur.executemany('''INSERT INTO encounter_waves (encounter_id, wave_number, 
+                        enemy_template_id, enemy_count) VALUES (?,?,?,?)''', waves)
+
     # Seed initial data
     cur.execute('SELECT count(*) FROM users')
     if cur.fetchone()[0] == 0:
@@ -250,6 +275,7 @@ def init_db():
         seed_classes(cur)
         seed_enemies(cur)
         seed_skills(cur)
+        seed_encounters(cur)
         print("World Data Seeded: Classes (T1/T2), Enemies (Common/Boss), and Basic Skills.")
     
     con.commit()

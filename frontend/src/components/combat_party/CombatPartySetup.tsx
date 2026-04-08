@@ -19,7 +19,7 @@ function CombatPartySetup( {setView, rosterData, combatPartyData, toggleCombatMe
                     ))}
                 </div>
             </div>
-            <button disabled={squadCount === 0} className="btn btn-primary h-fit text-2xl py-2 px-4" onClick={() => handleStartBattle()}>
+            <button disabled={squadCount === 0} className="btn btn-primary h-fit text-2xl py-2 px-4" onClick={() => handleStartBattle(1)}>
                 BEGIN ENCOUNTER
             </button>
             <button className="btn btn-secondary h-fit text-xl py-2 px-4" onClick={() => setView('town')}>

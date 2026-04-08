@@ -87,8 +87,8 @@ function App() {
     }
   }
 
-  const handleStartBattle = async() => {
-    const res = await fetch('http://127.0.0.1:8000/battle/start', {
+  const handleStartBattle = async (id: number) => {
+    const res = await fetch(`http://127.0.0.1:8000/battle/start/${id}`, {
       method: 'POST'
     })
     if (res.ok) {

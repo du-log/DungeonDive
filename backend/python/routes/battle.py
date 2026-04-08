@@ -346,11 +346,13 @@ def battle_attack(attacker_id: int, target_id: int):
 
         con.commit()
 
+        battle_id = cur.execute("SELECT battle_id FROM users WHERE id = 1").fetchone()
+
         msg = f"{attacker['name']} dealt {damage} damage to {target['name']}!"
-        log_battle_event(1, msg)
+        log_battle_event(battle_id, msg)
 
         if is_dead == 1:
-            log_battle_event(1, f"{target['name']} has been slain!")
+            log_battle_event(battle_id, f"{target['name']} has been slain!")
 
         return {
             "message": msg,
