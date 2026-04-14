@@ -31,7 +31,7 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                         Enter Dungeon ({partyData.length}/4)
                     </button>
                     <button onClick={() => activeBattleId ? setView('battle') : setView('battle-setup')}
-                    className={`btn btn-xl w-fit h-fit text-xl p-2`}>
+                    className={`btn btn-xl w-fit h-fit text-xl p-2 ${rosterData.adventurers.length === 0 ? 'btn-disabled' : ''}`}>
                         <Swords size={40} />
                         {activeBattleId ? "Resume Battle" : "Setup for Battle"}
                     </button>

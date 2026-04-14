@@ -290,7 +290,7 @@ def battle_turn_tick():
             }
 
         for unit in combatants:
-            new_readiness = unit['readiness'] + (unit['speed'] * 0.1)
+            new_readiness = unit['readiness'] + (unit['speed'] * 0.5)
             cur.execute("UPDATE combatants SET readiness = ? WHERE id = ?", (new_readiness, unit['id']))
 
         con.commit()
