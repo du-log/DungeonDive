@@ -122,19 +122,24 @@ function App() {
         const combatRes = await fetch('http://127.0.0.1:8000/battle/combatants')
         const combatData = await combatRes.json()
 
-        const playerTarget = combatData.combatants.find(c => c.unit_type === 'adventurer' && c.current_hp > 0)
-        if(playerTarget) {
-          setTargetId(playerTarget.id)
-        }
+        const livingAdv = combatData.combatants.filter(c => c.unit_type === 'adventurer' && c.is_dead === 0)
+        if (livingAdv.length > 0) {
+          const randomIndex = Math.floor(Math.random() * livingAdv.length)
 
-        setTimeout(async () => {
+          const playerTarget = livingAdv[randomIndex]
           if(playerTarget) {
-            executeAttack(playerTarget.id, data.active_unit_id)
-          } else {
-            console.log("No valid player targets found!")
-            setActiveUnitId(null)
+            setTargetId(playerTarget.id)
           }
-        }, 1000)
+
+          setTimeout(async () => {
+            if(playerTarget) {
+              executeAttack(playerTarget.id, data.active_unit_id)
+            } else {
+              console.log("No valid player targets found!")
+              setActiveUnitId(null)
+            }
+          }, 1000)
+        }
       }
     }
     await fetchBattleData()
