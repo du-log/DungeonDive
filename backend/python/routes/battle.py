@@ -469,7 +469,7 @@ def calculate_level_up(adventurer_id, gained_xp):
             stats_gained["spd"] += adv['speed_growth']
             
             # Optional: Increase the requirement for the next level
-            # req_xp = int(req_xp * 1.2) 
+            req_xp = int(req_xp * 1.2) 
 
         # 3. Update the Database
         if levels_gained > 0:
