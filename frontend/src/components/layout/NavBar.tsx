@@ -1,23 +1,24 @@
 import {useState, useEffect } from 'react'
 import { Coins } from 'lucide-react'
 
-function NavBar({ view, infoDataGold, infoDataUsername, partyData }) {
+function NavBar({ view, infoDataGold, infoDataUsername, partyData, setView }) {
 
     const partySize = partyData.length
 
     return(
-        <nav className='navbar relative h-full w-full bg-base-300 items-center justify-center gap-[10vw] border-b pl-[1vw] pr-[1vw]'>
-            <div className='flex flex-col flex-start relative h-fit w-[1/3] justify-center'>
-                <span className='relative text-3xl font-bold'>DUNGEON DIVE</span>
+        <nav className='navbar relative h-full w-full bg-base-300 items-center justify-center justify-items-center gap-[10vw] border-b px-[1vw]'>
+            <div className='flex flex-col flex-start relative h-fit w-full justify-center'>
+                <span className='relative text-3xl font-bold cursor-pointer hover:text-primary transition-colors'
+                onClick={() => setView('town')}>DUNGEON DIVE</span>
             </div>
-            <div className='flex flex-grow relative h-fit w-[1/3] items-center justify-center badge badge-primary p-2 text-xl'>
+            <div className='absolute flex flex-grow h-fit w-1/4 items-center justify-center badge badge-primary p-2 text-xl'>
                 {view === 'town' && `In Town`}
                 {view === 'dungeon' && `In Dungeon`}
                 {view === 'battle' && `In Battle`}
                 {view === 'battle-setup' && `Setting Up`}
                 {view === 'results' && `Battle Results`}
             </div>
-            <div className='flex flex-end relative h-fit w-[1/3] items-center justify-center p-1 gap-[2vw]'>
+            <div className='flex flex-end relative h-fit w-full items-center justify-center py-1 gap-[2vw]'>
                 <div className='badge badge-warning p-5 relative w-fit'>
                     <Coins size={20}/>
                     <p className='w-full text-xl justify-items-center'>{infoDataGold}</p>

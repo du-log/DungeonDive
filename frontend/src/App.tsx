@@ -6,6 +6,7 @@ import DungeonView from './views/DungeonView'
 import BattleView from './views/BattleView'
 import CombatPartySetup from './components/combat_party/CombatPartySetup'
 import BattleResults from './components/battle/BattleResults'
+import TownViewV2 from './components/town/TownViewV2'
 
 function App() {
   const [view, setView] = useState('town')
@@ -258,10 +259,11 @@ function App() {
         view={view}
         infoDataGold={infoData?.gold || 0}
         infoDataUsername={infoData?.username || 'Player'}
-        partyData={partyData} 
+        partyData={partyData}
+        setView={setView}
         />
       </header>
-      <main className='flex-grow relative overflow-hidden h-full'>
+      <main className='relative overflow-hidden h-full'>
           {view === 'town' && 
         <TownView 
         rosterData={rosterData}
@@ -309,6 +311,21 @@ function App() {
         combatants={battleCombatants}
         endRewards={endRewards}
         />}
+
+        {view === 'town2' &&
+        <TownViewV2
+        setView={setView}
+        />}
+
+        {view === 'guildhall'}
+
+        {view === 'infirmary'}
+
+        {view === 'tavern'}
+
+        {view === 'market'}
+
+        {view ==='dungeonlobby'}
       </main>
       <footer className='flex-end relative h-fit border-t'>
         <p className='text-xs'>Dungeon Dive &copy; 2026</p>

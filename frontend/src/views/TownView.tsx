@@ -35,6 +35,10 @@ function TownView( {rosterData, refreshData, partyData, togglePartyMember, setVi
                         <Swords size={40} />
                         {activeBattleId ? "Resume Battle" : "Setup for Battle"}
                     </button>
+                    <button onClick={() => setView('town2')}
+                    className='btn btn-xl w-fit h-fit text-xl p-2'>
+                        Preview new TownView
+                    </button>
 
                 </div>
             )}
