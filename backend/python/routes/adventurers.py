@@ -26,7 +26,14 @@ def get_stats():
             raise HTTPException(status_code=404, detail="User not found")
     
         adventurer_rows = cur.execute(
-            'SELECT * FROM adventurers WHERE user_id = ?', (user_row['id'],)
+            '''SELECT
+            a.*,
+            c.class_name,
+            c.tier
+            FROM adventurers a
+            LEFT JOIN classes c ON a.class_id = c.id
+            WHERE a.user_id = ?
+            ''', (user_row['id'],)
         ).fetchall()
 
         roster = {

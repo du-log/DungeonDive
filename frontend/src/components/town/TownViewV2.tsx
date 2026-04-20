@@ -21,7 +21,7 @@ function TownView( {setView}) {
                         icon={<ChessRook size={30}/>}
                         status="Challenge the Dungeon"
                         color="bg-red-900 text-primary-content"
-                        onClick={() => setView('dungeonlobby')}
+                        onClick={() => setView('town')} //change later
                     />
                 </div>
                 <div className="flex flex-col col-3 row-1 gap-3 h-fit justify-center items-center border rounded-xl p-3">
@@ -30,13 +30,13 @@ function TownView( {setView}) {
                     title="Tavern"
                     icon={<Beer size={30}/>}
                     status="Recruit Heroes"
-                    onClick={() => setView('tavern')}
+                    onClick={() => setView('town')} //change later
                     />
                     <BuildingCard
                     title="Market"
                     icon={<Store size={30}/>}
                     status="Weapons and Supplies"
-                    onClick={() => setView('market')}
+                    onClick={() => setView('town')} //change later
                     />
                 </div>
                 <div className="flex flex-col col-1 row-2 gap-3 h-fit justify-center items-center border rounded-xl p-3">
@@ -45,13 +45,13 @@ function TownView( {setView}) {
                         title="Infirmary"
                         icon={<Hospital size={30}/>}
                         status="Heal Heroes"
-                        onClick={() => setView('infirmary')}
+                        onClick={() => setView('town')} //change later
                     />
                     <BuildingCard
                         title="Church"
                         icon={<Church size={30}/>}
                         status="Coming Soon!"
-                        onClick={() => setView('')}
+                        onClick={() => setView('town')} //change later
                     />
                 </div>
             </div>
