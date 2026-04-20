@@ -13,6 +13,8 @@ function NavBar({ view, infoDataGold, infoDataUsername, partyData, setView }) {
             </div>
             <div className='absolute flex flex-grow h-fit w-1/4 items-center justify-center badge badge-primary p-2 text-xl'>
                 {view === 'town' && `In Town`}
+                {view === 'town2' && `In Town`}
+                {view === 'guildhall' && `Guild Hall`}
                 {view === 'dungeon' && `In Dungeon`}
                 {view === 'battle' && `In Battle`}
                 {view === 'battle-setup' && `Setting Up`}

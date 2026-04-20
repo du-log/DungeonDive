@@ -539,7 +539,7 @@ async def process_rewards():
         heroes = cur.execute("SELECT unit_id FROM combatants WHERE unit_type = 'adventurer'").fetchall()
         print(f"fetched all {len(heroes)} adventurers")
         divisor = len(heroes) if len(heroes) > 0 else 1
-        per_hero_xp = total_xp / divisor
+        per_hero_xp = int(total_xp / divisor)
 
         party_reports = []
         for hero in heroes:

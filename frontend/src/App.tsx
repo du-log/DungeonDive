@@ -7,6 +7,7 @@ import BattleView from './views/BattleView'
 import CombatPartySetup from './components/combat_party/CombatPartySetup'
 import BattleResults from './components/battle/BattleResults'
 import TownViewV2 from './components/town/TownViewV2'
+import GuildHallV2 from './components/guild/GuildHallV2'
 
 function App() {
   const [view, setView] = useState('town')
@@ -317,7 +318,10 @@ function App() {
         setView={setView}
         />}
 
-        {view === 'guildhall'}
+        {view === 'guildhall' &&
+        <GuildHallV2
+        setView={setView}
+        rosterData={rosterData} />}
 
         {view === 'infirmary'}
 

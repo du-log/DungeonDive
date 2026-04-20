@@ -1,0 +1,8 @@
+function AcademyView( {advData} ) {
+    return (
+        <div className="animate-fade-in">
+            <h2>Placeholder</h2>
+        </div>
+    )
+}
+export default AcademyView
