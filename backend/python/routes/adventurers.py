@@ -223,4 +223,72 @@ def toggle_combat_party_member(adv_id: int):
         raise HTTPException(status_code=500, detail=str(e))
     finally:
         con.close()
+
+@router.get("/guild/formations")
+def get_user_formations(user_id: int):
+    con = get_db_con()
+    query = '''
+        SELECT
+            f.*,
+            a1.name AS s1_name, c1.class_name AS s1_class, a1.level AS s1_level,
+            a2.name AS s2_name, c2.class_name AS s2_class, a2.level AS s2_level,
+            a3.name AS s3_name, c3.class_name AS s3_class, a3.level AS s3_level,
+            a4.name AS s4_name, c4.class_name AS s4_class, a4.level AS s4_level
+        FROM formations f
+        LEFT JOIN adventurers a1 ON f.slot_1_hero_id = a1.id
+        LEFT JOIN adventurers a2 ON f.slot_2_hero_id = a2.id
+        LEFT JOIN adventurers a3 ON f.slot_3_hero_id = a3.id
+        LEFT JOIN adventurers a4 ON f.slot_4_hero_id = a4.id
+        LEFT JOIN classes c1 ON c1.id = a1.class_id
+        LEFT JOIN classes c2 ON c1.id = a2.class_id
+        LEFT JOIN classes c3 ON c1.id = a3.class_id
+        LEFT JOIN classes c4 ON c1.id = a4.class_id
+        WHERE f.user_id = ?
+        ORDER BY f.id ASC
+    '''
+    try:
+        user_formations = con.execute(query, (user_id,)).fetchall()
+        if not user_formations:
+            raise HTTPException(status_code=500, detail="Could not get formations for this user")
+        
+        return user_formations
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
+@router.patch("/guild/formations/insert")
+def update_formation_slot(formation_id: int, slot_number: int, hero_id: int, user_id: int):
+    con = get_db_con()
+    cur = con.cursor()
+    try:
+        exploring = cur.execute('SELECT is_exploring FROM formations WHERE id = ?', (formation_id,)).fetchone()
+        if exploring is True:
+            raise HTTPException(status_code=403, detail='Formation currently in an exploration, denied.')
+
+        if not 1 <= slot_number <= 4:
+            return {'error': 'invalid slot'}
+        column_name = f"slot_{slot_number}_hero_id"
+
+        cur.execute(f"""
+            UPDATE formations
+            SET slot_1_hero_id = CASE WHEN slot_1_hero_id = ? THEN NULL ELSE slot_1_hero_id END,
+                slot_2_hero_id = CASE WHEN slot_2_hero_id = ? THEN NULL ELSE slot_2_hero_id END,
+                slot_3_hero_id = CASE WHEN slot_3_hero_id = ? THEN NULL ELSE slot_3_hero_id END,
+                slot_4_hero_id = CASE WHEN slot_4_hero_id = ? THEN NULL ELSE slot_4_hero_id END
+            WHERE id = ? AND user_id = ?
+        """, (hero_id, hero_id, hero_id, hero_id, formation_id, user_id,))
+
+        cur.execute(f"UPDATE formations SET {column_name} = ? WHERE id = ? AND user_id = ?", (hero_id, formation_id, user_id,))
+
+        con.commit()
+        return {
+            'status': f'hero with id {hero_id} inserted into slot {slot_number}'
+        }
+    except Exception as e:
+        con.rollback()
+        raise HTTPException(status_code=500, detail=str(e))
+    finally:
+        con.close()
+
 #

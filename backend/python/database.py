@@ -5,7 +5,7 @@ def init_db():
     con = sqlite3.connect('game.db')
     cur = con.cursor()
 
-    # Create User Table
+    # User Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -20,6 +20,7 @@ def init_db():
         )
     ''')
 
+    # Classes Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS classes (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -135,7 +136,7 @@ def init_db():
         )
     ''')
 
-    #Battle Instance Table (Live Data for Combat)
+    # Battle Instance Table (Live Data for Combat)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS combatants (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -151,7 +152,7 @@ def init_db():
         )
     ''')
 
-    #Battle Logs Table
+    # Battle Logs Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS battle_logs (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -161,7 +162,7 @@ def init_db():
         )
     ''')
 
-    #Encounters Table
+    # Encounters Table
     cur.execute('''
         CREATE TABLE IF NOT EXISTS encounters (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -173,7 +174,7 @@ def init_db():
         )
     ''')
 
-    #Encounter Waves (Bridging)
+    # Encounter Waves (Bridging)
     cur.execute('''
         CREATE TABLE IF NOT EXISTS encounter_waves (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -185,6 +186,29 @@ def init_db():
         FOREIGN KEY (enemy_template_id) REFERENCES enemies(id)
         )
     ''')
+
+    # Formations Table
+    cur.execute('''
+        CREATE TABLE IF NOT EXISTS formations (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER,
+        formation_name TEXT DEFAULT 'Squad 1',
+        slot_1_hero_id INTEGER DEFAULT NULL,
+        slot_2_hero_id INTEGER DEFAULT NULL,
+        slot_3_hero_id INTEGER DEFAULT NULL,
+        slot_4_hero_id INTEGER DEFAULT NULL,
+        is_active BOOLEAN DEFAULT 0,
+        town_id INTEGER DEFAULT 1,
+        is_exploring BOOLEAN DEFAULT 0,
+        explore_id INTEGER DEFAULT NULL,
+        FOREIGN KEY (slot_1_hero_id) REFERENCES adventurers(id),
+        FOREIGN KEY (slot_2_hero_id) REFERENCES adventurers(id),
+        FOREIGN KEY (slot_3_hero_id) REFERENCES adventurers(id),
+        FOREIGN KEY (slot_4_hero_id) REFERENCES adventurers(id),
+        FOREIGN KEY (user_id) REFERENCES users(id)
+        )
+    ''')
+    # FOREIGN KEY (explore_id) REFERENCES frontier_locations(id)
 
     # Seeding functions
     def seed_classes(cur):
@@ -272,6 +296,15 @@ def init_db():
         ]
         cur.executemany('''INSERT INTO encounter_waves (encounter_id, wave_number, 
                         enemy_template_id, enemy_count) VALUES (?,?,?,?)''', waves)
+    
+    def seed_formations(cur):
+        formations = [
+            (1, "Squad 1"),
+            (1, "Squad 2"),
+            (1, "Squad 3"),
+        ]
+
+        cur.executemany('INSERT INTO formations(user_id, formation_name) VALUES (?, ?)', formations)
 
     # Seed initial data
     cur.execute('SELECT count(*) FROM users')
@@ -282,6 +315,7 @@ def init_db():
         seed_enemies(cur)
         seed_skills(cur)
         seed_encounters(cur)
+        seed_formations(cur)
         print("World Data Seeded: Classes (T1/T2), Enemies (Common/Boss), and Basic Skills.")
     
     con.commit()
