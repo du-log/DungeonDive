@@ -1,5 +1,5 @@
 import BuildingCard from "./BuildingCard"
-import { University, Beer, ChessRook, Hospital, Church, Store} from "lucide-react"
+import { University, Beer, ChessRook, Hospital, Church, Store, Landmark} from "lucide-react"
 
 function TownView( {setView}) {
     return (
@@ -9,9 +9,15 @@ function TownView( {setView}) {
                     <h2 className="badge badge-outline font-bold text-lg w-full">Command District</h2>
                     <BuildingCard
                         title="Guild Hall"
-                        icon={<University size={30}/>}
+                        icon={<Landmark size={30}/>}
                         status="Manage Roster"
                         onClick={() => setView('guildhall')}
+                    />
+                    <BuildingCard
+                        title="Academy"
+                        icon={<University size={30}/>}
+                        status="Promote Heroes"
+                        onClick={() => setView('academy')}
                     />
                 </div>
                 <div className="flex flex-col col-2 row-1 row-span-2 gap-3 h-fit justify-center items-center border rounded-xl p-3">
